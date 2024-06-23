@@ -1,0 +1,1 @@
+lark_bot_url = "https://open.feishu.cn/open-apis/bot/v2/hook/c0c5404d-8391-47e0-93aa-ddca5a518e2d"  # SFT

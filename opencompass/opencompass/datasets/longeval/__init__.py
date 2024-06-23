@@ -1,0 +1,10 @@
+from .longeval_2wikimqa_e import *  # noqa: F401, F403
+from .longeval_dureader import *  # noqa: F401, F403
+from .longeval_gov_report_e import *  # noqa: F401, F403
+from .longeval_hotpotqa_e import *  # noqa: F401, F403
+from .longeval_lines import *  # noqa: F401, F403
+from .longeval_multifieldqa_zh import *  # noqa: F401, F403
+from .longeval_passage_retrieval_zh import *  # noqa: F401, F403
+from .longeval_stackselect import *  # noqa: F401, F403
+from .longeval_textsort import *  # noqa: F401, F403
+from .longeval_trec_e import *  # noqa: F401, F403
