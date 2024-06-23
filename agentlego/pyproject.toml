@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools >= 62.6, < 64.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentlego"
+authors = [
+  {name = "AgentLego Contributors"}
+]
+maintainers = [
+  {name = "mzr1996", email = "mzr1996@163.com"}
+]
+description = "AgentLego is a versatile tool library for enhancing LLM-based agents."
+requires-python = ">=3.8"
+keywords = ["LLM", "Multi-Modality", "AI Agent"]
+license = {text = "Apache License 2.0"}
+classifiers = [
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3",
+]
+dynamic = ["version", "readme", "dependencies", "optional-dependencies"]
+
+[project.urls]
+Documentation = "https://agentlego.readthedocs.io"
+Repository = "https://github.com/InternLM/agentlego"
+
+[project.scripts]
+agentlego-server = "agentlego.server.server:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agentlego*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "agentlego.version.__version__"}
+readme = {file = "README.md", content-type = "text/markdown"}
+dependencies = {file = "requirements/runtime.txt"}
+
+[tool.setuptools.dynamic.optional-dependencies]
+all = {file = "requirements/optional.txt"}
+server = {file = "requirements/server.txt"}
+
+[tool.yapf]
+based_on_style = "pep8"
+blank_line_before_nested_class_or_def = true
+split_before_expression_after_opening_paren = true
+split_penalty_import_names = 0
+split_penalty_after_opening_bracket = 800
+column_limit = 89
+
+[tool.isort]
+line_length = 89
+multi_line_output = 0
+known_first_party = "agentlego"
+no_lines_before = ["STDLIB", "LOCALFOLDER"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]

@@ -1,0 +1,14 @@
+Calculator
+GoogleSearch
+Plot
+Solver
+OCR
+ImageDescription
+TextToBbox
+CountGivenObject
+MathOCR
+DrawBox
+AddText
+TextToImage
+ImageStylization
+RegionAttributeDescription
