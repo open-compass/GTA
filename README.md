@@ -53,10 +53,10 @@ Here is the performance of various LLMs on GTA. Inst, Tool, Arg, Summ, and Ans d
 **Models** | **Inst** | **Tool** | **Arg** | **Summ** | **P** | **O** | **L** | **C** | **Ans**
 ---|---|---|---|---|---|---|---|---|---
 💛 ***API-based*** | | | | | | | | |
-gpt-4-1106-preview | 85.19 | 61.4 | <ins>**37.88**</ins> | 75 | 67.61 | 64.61 | 74.73 |89.55 |  <ins>**46.59**</ins>
+gpt-4-1106-preview | 85.19 | 61.4 | <ins>**37.88**</ins> | <ins>**75**</ins> | 67.61 | 64.61 | 74.73 |89.55 |  <ins>**46.59**</ins>
 gpt-4o | <ins>**86.42**</ins> | <ins>**70.38**</ins> | 35.19 | 72.77 | <ins>**75.56**</ins> | <ins>**80**</ins> | <ins>**78.75**</ins> | 82.35 | 41.52
 gpt-3.5-turbo | 67.63 | 42.91 | 20.83 | 60.24 | 58.99 | 62.5 | 59.85 | <ins>**97.3**</ins> | 23.62
-claude3-opus |64.75 | 54.4 | 17.59 | <ins>**73.81**</ins> | 41.69 | 63.23 | 46.41 | 42.1 | 23.44
+claude3-opus |64.75 | 54.4 | 17.59 | 73.81 | 41.69 | 63.23 | 46.41 | 42.1 | 23.44
 mistral-large | 58.98 | 38.42 | 11.13 | 68.03 | 19.17 | 30.05 | 26.85 | 38.89 | 17.06 
 💚 ***Open-source*** | | | | | | | | |
 qwen1.5-72b-chat | <ins>48.83</ins> | 24.96 | <ins>7.9</ins> | 68.7 | 12.41 | 11.76 | 21.16 | 5.13 | <ins>13.32</ins>
@@ -73,41 +73,55 @@ yi-6b-chat | 21.26 | 14.72 | 0 | 32.54 | 1.47 | 0 | 1.18 | 0 | 0.58
 
 
 
-## 🚀 Get Started
-[OpenCompass](https://github.com/open-compass/opencompass) is a toolkit for evaluating the performance of large language models (LLMs). There are steps for inference MathBench with OpenCompass:
-1. Install OpenCompass
+## 🚀 Evaluate on GTA
+To evaluate on GTA, we prepare the model, tools, and evaluation process with [LMDeploy](https://github.com/InternLM/lmdeploy), [AgentLego](https://github.com/InternLM/agentlego), and [OpenCompass](https://github.com/open-compass/opencompass), respectively. These three parts need three different conda environments.
+
+1. Clone this repo.
 ```
+git clone https://github.com/open-compass/GTA.git
+```
+2. Prepare the dataset.
+```
+pip install openxlab
+openxlab login
+openxlab dataset get --dataset-repo Jize/GTA
+```
+3. Prepare the model with LMDeploy.
+```
+# install LMDeploy
+conda create -n lmdeploy python=3.10
+conda activate lmdeploy
+pip install lmdeploy
+```
+```
+# launch a model service with LMDeploy
+lmdeploy serve api_server /path/to/your/model --server-port [port_number] --model-name [your_model_name]
+```
+4. Prepare tools with AgentLego
+```
+# install AgentLego
+conda deactivate
+conda create -n agentlego python=3.10
+conda activate agentlego
+cd agentlego
+pip install -e .
+```
+```
+# deploy tools for GTA benchmark
+agentlego-server start --port 16181 --extra ./benchmark.py  `cat benchmark_toollist.txt` --host 0.0.0.0
+```
+5. Infer and evaluate with OpenCompass
+```
+# install OpenCompass
 conda create --name opencompass python=3.10 pytorch torchvision pytorch-cuda -c nvidia -c pytorch -y
 conda activate opencompass
-git clone https://github.com/open-compass/opencompass opencompass
 cd opencompass
 pip install -e .
 ```
-2. Prepare the dataset, you can download the data from [release file](https://github.com/open-compass/MathBench/releases/tag/v0.1.0)
 ```
-# Download dataset from release file and copy to data/ folder
-mkdir data
-cp -rf mathbench_v1 ./data/ 
+# infer and evaluate
+python run.py configs/eval_gta_bench.py -p llmit -q auto --max-num-workers 32 --debug
 ```
-3. Inference MathBench
-```
-# Inference MathBench with hf_llama2_7b_chat model
-python run.py --models hf_llama2_7b_chat --datasets mathbench_gen
-```
-You can also evaluate HuggingFace models via command line. 
-```
-python run.py --datasets mathbench_gen \
---hf-path meta-llama/Llama-2-7b-chat-hf \  # HuggingFace model path
---model-kwargs device_map='auto' \  # Arguments for model construction
---tokenizer-kwargs padding_side='left' truncation='left' use_fast=False \  # Arguments for tokenizer construction
---max-seq-len 2048 \  # Maximum sequence length the model can accept
---batch-size 8 \  # Batch size
---no-batch-padding \  # Don't enable batch padding, infer through for loop to avoid performance loss
---num-gpus 1  # Number of minimum required GPUs
---summarizer summarizers.mathbench_v1 # Summarizer for MathBench
-```
-
-
 
 
 # 📝 Citation
