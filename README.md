@@ -15,15 +15,17 @@
 [📃 [Paper](https://xxx)]
 [🌐 [Project Page](https://xxx)]
 [🤗 [Hugging Face](https://xxx)]
-[📌 [License](https://xxx)]
+[📌 [License](https://github.com/open-compass/GTA/blob/main/LICENSE.txt)]
 </div>
 
 ## 🌟 Introduction
 
+>In developing general-purpose agents, significant focus has been placed on integrating large language models (LLMs) with various tools. This poses a challenge to the tool-use capabilities of LLMs. However, there are evident gaps between existing tool evaluations and real-world scenarios. Current evaluations often use AI-generated queries, single-step tasks, dummy tools, and text-only inputs, which fail to reveal the agents' real-world problem-solving abilities effectively. 
+
 GTA is a benchmark to evaluate the tool-use capability of LLM-based agents in real-world scenarios. It features three main aspects:
 - **Real user queries.** The benchmark contains 229 human-written queries with simple real-world objectives but implicit tool-use, requiring the LLM to reason the suitable tools and plan the solution steps. 
-- **Real deployed tools.** an evaluation platform equipped with tools across perception, operation, logic, and creativity categories to evaluate the agents' actual task execution performance.
-- **Real multimodal inputs.** authentic image files, such as spatial scenes, web page screenshots, tables, code snippets, and printed/handwritten materials, used as the query contexts to align with real-world scenarios closely.
+- **Real deployed tools.** GTA provides an evaluation platform equipped with tools across perception, operation, logic, and creativity categories to evaluate the agents' actual task execution performance.
+- **Real multimodal inputs.** Each query is attached with authentic image files, such as spatial scenes, web page screenshots, tables, code snippets, and printed/handwritten materials, used as the query contexts to align with real-world scenarios closely.
 <div align="center">
  <img src="figs/dataset.jpg" width="800"/>
 </div>
@@ -32,10 +34,10 @@ GTA is a benchmark to evaluate the tool-use capability of LLM-based agents in re
 
 - **[2024.x.xx]** Paper available on Arxiv. ✨✨✨
 - **[2024.x.xx]** Release the evaluation and tool deployment code of GTA. 🔥🔥🔥
-- **[2024.x.xx]** Release the GTA dataset on Hugging Face and OpenDataLab. 🎉🎉🎉
+- **[2024.x.xx]** Release the GTA dataset on Hugging Face. 🎉🎉🎉
 
 ## 📚 Dataset Statistics
-GTA comprises a total of 229 questions. The basic dataset statistics is presented below. 
+GTA comprises a total of 229 questions. The basic dataset statistics is presented below.  The number of tools involved in each question varies from 1 to 4. The steps to resolve the questions range from 2 to 8.
 
 <div align="center">
  <img src="figs/statistics.jpg" width="800"/>
@@ -76,48 +78,58 @@ yi-6b-chat | 21.26 | 14.72 | 0 | 32.54 | 1.47 | 0 | 1.18 | 0 | 0.58
 ## 🚀 Evaluate on GTA
 To evaluate on GTA, we prepare the model, tools, and evaluation process with [LMDeploy](https://github.com/InternLM/lmdeploy), [AgentLego](https://github.com/InternLM/agentlego), and [OpenCompass](https://github.com/open-compass/opencompass), respectively. These three parts need three different conda environments.
 
+### Prepare GTA Dataset
 1. Clone this repo.
 ```
 git clone https://github.com/open-compass/GTA.git
+cd GTA
 ```
-2. Prepare the dataset.
+2. Download the dataset via Hugging Face.
 ```
-pip install openxlab
-openxlab login
-openxlab dataset get --dataset-repo Jize/GTA
+pip install -U huggingface_hub
+export HF_ENDPOINT=https://hf-mirror.com
+mkdir -p ./opencompass/data/gta 
+huggingface-cli download --repo-type dataset --resume-download Jize1/GTA --local-dir ./opencompass/data/gta --local-dir-use-symlinks False
 ```
-3. Prepare the model with LMDeploy.
+### Prepare Your Model
+1. Download the model weights. Take Qwen1.5-7B-Chat as an example.
 ```
-# install LMDeploy
+mkdir -p models/qwen1.5-7b-chat
+huggingface-cli download --resume-download Qwen/Qwen1.5-7B-Chat --local-dir ./models/qwen1.5-7b-chat --local-dir-use-symlinks False
+```
+2. Install LMDeploy.
+```
 conda create -n lmdeploy python=3.10
 conda activate lmdeploy
 pip install lmdeploy
 ```
+3. Launch a model service.
 ```
-# launch a model service with LMDeploy
-lmdeploy serve api_server /path/to/your/model --server-port [port_number] --model-name [your_model_name]
+# lmdeploy serve api_server path/to/your/model --server-port [port_number] --model-name [your_model_name]
+
+lmdeploy serve api_server models/qwen1.5-7b-chat --server-port 12580 --model-name qwen1.5-7b-chat
 ```
-4. Prepare tools with AgentLego
+### Deploy Tools
+1. Install AgentLego
 ```
-# install AgentLego
-conda deactivate
 conda create -n agentlego python=3.10
 conda activate agentlego
 cd agentlego
 pip install -e .
 ```
+2. Deploy tools for GTA benchmark
 ```
-# deploy tools for GTA benchmark
 agentlego-server start --port 16181 --extra ./benchmark.py  `cat benchmark_toollist.txt` --host 0.0.0.0
 ```
-5. Infer and evaluate with OpenCompass
+### Start Evaluation
+1. Install OpenCompass.
 ```
-# install OpenCompass
 conda create --name opencompass python=3.10 pytorch torchvision pytorch-cuda -c nvidia -c pytorch -y
 conda activate opencompass
 cd opencompass
 pip install -e .
 ```
+2. Infer and evaluate with OpenCompass.
 ```
 # infer and evaluate
 python run.py configs/eval_gta_bench.py -p llmit -q auto --max-num-workers 32 --debug
