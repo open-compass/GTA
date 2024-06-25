@@ -92,8 +92,10 @@ mkdir -p ./opencompass/data/gta
 huggingface-cli download --repo-type dataset --resume-download Jize1/GTA --local-dir ./opencompass/data/gta --local-dir-use-symlinks False
 ```
 ### Prepare Your Model
-1. Download the model weights. Take Qwen1.5-7B-Chat as an example.
+1. Download the model weights.
 ```
+# huggingface-cli download --resume-download hugging/face/repo/name --local-dir your/local/path --local-dir-use-symlinks False
+
 mkdir -p models/qwen1.5-7b-chat
 huggingface-cli download --resume-download Qwen/Qwen1.5-7B-Chat --local-dir ./models/qwen1.5-7b-chat --local-dir-use-symlinks False
 ```
@@ -110,14 +112,14 @@ pip install lmdeploy
 lmdeploy serve api_server models/qwen1.5-7b-chat --server-port 12580 --model-name qwen1.5-7b-chat
 ```
 ### Deploy Tools
-1. Install AgentLego
+1. Install AgentLego.
 ```
 conda create -n agentlego python=3.10
 conda activate agentlego
 cd agentlego
 pip install -e .
 ```
-2. Deploy tools for GTA benchmark
+2. Deploy tools for GTA benchmark.
 ```
 agentlego-server start --port 16181 --extra ./benchmark.py  `cat benchmark_toollist.txt` --host 0.0.0.0
 ```
