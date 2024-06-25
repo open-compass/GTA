@@ -14,7 +14,7 @@
 
 [📃 [Paper](https://xxx)]
 [🌐 [Project Page](https://xxx)]
-[🤗 [Hugging Face](https://xxx)]
+[🤗 [Hugging Face](https://huggingface.co/datasets/Jize1/GTA)]
 [📌 [License](https://github.com/open-compass/GTA/blob/main/LICENSE.txt)]
 </div>
 
@@ -76,7 +76,6 @@ yi-6b-chat | 21.26 | 14.72 | 0 | 32.54 | 1.47 | 0 | 1.18 | 0 | 0.58
 
 
 ## 🚀 Evaluate on GTA
-To evaluate on GTA, we prepare the model, tools, and evaluation process with [LMDeploy](https://github.com/InternLM/lmdeploy), [AgentLego](https://github.com/InternLM/agentlego), and [OpenCompass](https://github.com/open-compass/opencompass), respectively. These three parts need three different conda environments.
 
 ### Prepare GTA Dataset
 1. Clone this repo.
@@ -84,22 +83,28 @@ To evaluate on GTA, we prepare the model, tools, and evaluation process with [LM
 git clone https://github.com/open-compass/GTA.git
 cd GTA
 ```
-2. Download the dataset via Hugging Face.
+2. Download the dataset from [release file](https://github.com/open-compass/GTA/releases/download/v0.1.0/gta_dataset.zip). 
+Put it under the folder ```./opencompass/data/```. The structure of files should be:
 ```
-pip install -U huggingface_hub
-export HF_ENDPOINT=https://hf-mirror.com
-mkdir -p ./opencompass/data/gta 
-huggingface-cli download --repo-type dataset --resume-download Jize1/GTA --local-dir ./opencompass/data/gta --local-dir-use-symlinks False
+GTA/
+├── agentlego
+├── opencompass
+│   ├── data
+│   │   ├── gta_dataset
+│   ├── ...
+├── ...
 ```
+
 ### Prepare Your Model
 1. Download the model weights.
 ```
+pip install -U huggingface_hub
+
 # huggingface-cli download --resume-download hugging/face/repo/name --local-dir your/local/path --local-dir-use-symlinks False
 
-mkdir -p models/qwen1.5-7b-chat
 huggingface-cli download --resume-download Qwen/Qwen1.5-7B-Chat --local-dir ./models/qwen1.5-7b-chat --local-dir-use-symlinks False
 ```
-2. Install LMDeploy.
+2. Install [LMDeploy](https://github.com/InternLM/lmdeploy).
 ```
 conda create -n lmdeploy python=3.10
 conda activate lmdeploy
@@ -109,10 +114,10 @@ pip install lmdeploy
 ```
 # lmdeploy serve api_server path/to/your/model --server-port [port_number] --model-name [your_model_name]
 
-lmdeploy serve api_server models/qwen1.5-7b-chat --server-port 12580 --model-name qwen1.5-7b-chat
+lmdeploy serve api_server ./models/qwen1.5-7b-chat --server-port 12580 --model-name qwen1.5-7b-chat
 ```
 ### Deploy Tools
-1. Install AgentLego.
+1. Install [AgentLego](https://github.com/InternLM/agentlego).
 ```
 conda create -n agentlego python=3.10
 conda activate agentlego
@@ -124,7 +129,7 @@ pip install -e .
 agentlego-server start --port 16181 --extra ./benchmark.py  `cat benchmark_toollist.txt` --host 0.0.0.0
 ```
 ### Start Evaluation
-1. Install OpenCompass.
+1. Install [OpenCompass](https://github.com/open-compass/opencompass).
 ```
 conda create --name opencompass python=3.10 pytorch torchvision pytorch-cuda -c nvidia -c pytorch -y
 conda activate opencompass
