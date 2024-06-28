@@ -136,6 +136,7 @@ lmdeploy serve api_server ~/models/qwen1.5-7b-chat --server-port 12580 --model-n
 conda create -n agentlego python=3.11.9
 conda activate agentlego
 cd agentlego
+pip install -r requirements_all.txt
 pip install -e .
 ```
 2. Deploy tools for GTA benchmark.
