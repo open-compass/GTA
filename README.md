@@ -34,6 +34,7 @@ The comparison of GTA queries with AI-generated queries is shown in the table be
 <div align="center">
  <img src="figs/implicit.jpg" width="800"/>
 </div>
+
 ## 📣 What's New
 
 - **[2024.x.xx]** Paper available on Arxiv. ✨✨✨
