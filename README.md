@@ -108,7 +108,7 @@ GTA/
 ```
 pip install -U huggingface_hub
 # huggingface-cli download --resume-download hugging/face/repo/name --local-dir your/local/path --local-dir-use-symlinks False
-huggingface-cli download --resume-download Qwen/Qwen1.5-7B-Chat --local-dir ./models/qwen1.5-7b-chat --local-dir-use-symlinks False
+huggingface-cli download --resume-download Qwen/Qwen1.5-7B-Chat --local-dir ~/models/qwen1.5-7b-chat --local-dir-use-symlinks False
 ```
 2. Install [LMDeploy](https://github.com/InternLM/lmdeploy).
 ```
@@ -128,7 +128,7 @@ pip install https://github.com/InternLM/lmdeploy/releases/download/v${LMDEPLOY_V
 3. Launch a model service.
 ```
 # lmdeploy serve api_server path/to/your/model --server-port [port_number] --model-name [your_model_name]
-lmdeploy serve api_server ./models/qwen1.5-7b-chat --server-port 12580 --model-name qwen1.5-7b-chat
+lmdeploy serve api_server ~/models/qwen1.5-7b-chat --server-port 12580 --model-name qwen1.5-7b-chat
 ```
 ### Deploy Tools
 1. Install [AgentLego](https://github.com/InternLM/agentlego).
