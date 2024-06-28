@@ -88,7 +88,10 @@ yi-6b-chat | 21.26 | 14.72 | 0 | 32.54 | 1.47 | 0 | 1.18 | 0 | 0.58
 git clone https://github.com/open-compass/GTA.git
 cd GTA
 ```
-2. Download the dataset from [release file](https://github.com/open-compass/GTA/releases/download/v0.1.0/gta_dataset.zip). 
+2. Download the dataset from [release file](https://github.com/open-compass/GTA/releases/download/v0.1.0/gta_dataset.zip).
+```
+mkdir ./opencompass/data
+```
 Put it under the folder ```./opencompass/data/```. The structure of files should be:
 ```
 GTA/
