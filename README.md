@@ -180,7 +180,28 @@ models = [
 ```
 
 If you infer and evaluate in **step-by-step** mode, you should comment out **tool_server** and enable **tool_meta** in ```configs/eval_gta_bench.py```, and set infer mode and eval mode to **every_with_gt** in ```configs/datasets/gta_bench.py```:
-
+```
+models = [
+  dict(
+        abbr='qwen1.5-7b-chat',
+        type=LagentAgent,
+        agent_type=ReAct,
+        max_turn=10,
+        llm=dict(
+            type=OpenAI,
+            path='qwen1.5-7b-chat',
+            key='EMPTY',
+            openai_api_base='http://10.140.1.17:12580/v1/chat/completions',
+            query_per_second=1,
+            max_seq_len=4096,
+            stop='<|im_end|>',
+        ),
+        # tool_server='http://10.140.0.138:16181',
+        tool_meta='data/gta_dataset/toolmeta.json',
+        batch_size=8,
+    ),
+]
+```
 ```
 gta_bench_infer_cfg = dict(
     prompt_template=dict(
@@ -194,7 +215,28 @@ gta_bench_eval_cfg = dict(evaluator=dict(type=GTABenchEvaluator, mode='every_wit
 ```
 
 If you infer and evaluate in **end-to-end** mode, you should comment out **tool_meta** and enable **tool_server** in ```configs/eval_gta_bench.py```, and set infer mode and eval mode to **every** in ```configs/datasets/gta_bench.py```:
-
+```
+models = [
+  dict(
+        abbr='qwen1.5-7b-chat',
+        type=LagentAgent,
+        agent_type=ReAct,
+        max_turn=10,
+        llm=dict(
+            type=OpenAI,
+            path='qwen1.5-7b-chat',
+            key='EMPTY',
+            openai_api_base='http://10.140.1.17:12580/v1/chat/completions',
+            query_per_second=1,
+            max_seq_len=4096,
+            stop='<|im_end|>',
+        ),
+        tool_server='http://10.140.0.138:16181',
+        # tool_meta='data/gta_dataset/toolmeta.json',
+        batch_size=8,
+    ),
+]
+```
 ```
 gta_bench_infer_cfg = dict(
     prompt_template=dict(
