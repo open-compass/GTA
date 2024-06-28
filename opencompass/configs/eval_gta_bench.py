@@ -15,7 +15,7 @@ models = [
     # dict(
     #     abbr='gpt-4-1106',
     #     type=LagentAgent,
-    #     agent_type=ReWOO,
+    #     agent_type=ReAct,
     #     max_turn=10,
     #     llm=dict(
     #         type=OpenAI,
