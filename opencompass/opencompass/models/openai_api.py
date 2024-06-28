@@ -50,9 +50,7 @@ class OpenAI(BaseAPIModel):
         temperature (float, optional): What sampling temperature to use.
             If not None, will override the temperature in the `generate()`
             call. Defaults to None.
-        tokenizer_path (str, optional): The path to the tokenizer. Use path if
-            'tokenizer_path' is None, otherwise use the 'tokenizer_path'.
-            Defaults to None.
+        **gen_params: Other keyword arguments for generation payload.
     """
 
     is_api: bool = True
@@ -68,10 +66,8 @@ class OpenAI(BaseAPIModel):
                  meta_template: Optional[Dict] = None,
                  openai_api_base: str = OPENAI_API_BASE,
                  mode: str = 'none',
-                 logprobs: Optional[bool] = False,
-                 top_logprobs: Optional[int] = None,
                  temperature: Optional[float] = None,
-                 tokenizer_path: Optional[str] = None):
+                 **gen_params):
 
         super().__init__(path=path,
                          max_seq_len=max_seq_len,
@@ -84,17 +80,11 @@ class OpenAI(BaseAPIModel):
         self.temperature = temperature
         assert mode in ['none', 'front', 'mid', 'rear']
         self.mode = mode
-        self.logprobs = logprobs
-        self.top_logprobs = top_logprobs
-        self.tokenizer_path = tokenizer_path
+        self.gen_params = gen_params
 
         if isinstance(key, str):
-            if key == 'ENV':
-                if 'OPENAI_API_KEY' not in os.environ:
-                    raise ValueError('OpenAI API key is not set.')
-                self.keys = os.getenv('OPENAI_API_KEY').split(',')
-            else:
-                self.keys = [key]
+            key = os.getenv('OPENAI_API_KEY') if key == 'ENV' else key
+            self.keys = [os.getenv('ALLES_API_KEY') if key == 'alles' else key]
         else:
             self.keys = key
 
@@ -111,15 +101,16 @@ class OpenAI(BaseAPIModel):
         self.url = openai_api_base
         self.path = path
 
-    def generate(self,
-                 inputs: List[PromptType],
-                 max_out_len: int = 512,
-                 temperature: float = 0.7,
-                 **kwargs) -> List[str]:
+    def generate(
+        self,
+        inputs: List[str or PromptList],
+        max_out_len: int = 512,
+        temperature: float = 0.7,
+    ) -> List[str]:
         """Generate results given a list of inputs.
 
         Args:
-            inputs (List[PromptType]): A list of strings or PromptDicts.
+            inputs (List[str or PromptList]): A list of strings or PromptDicts.
                 The PromptDict should be organized in OpenCompass'
                 API format.
             max_out_len (int): The maximum length of the output.
@@ -141,12 +132,12 @@ class OpenAI(BaseAPIModel):
                              [temperature] * len(inputs)))
         return results
 
-    def _generate(self, input: PromptType, max_out_len: int,
+    def _generate(self, input: str or PromptList, max_out_len: int,
                   temperature: float) -> str:
         """Generate results given a list of inputs.
 
         Args:
-            inputs (PromptType): A string or PromptDict.
+            inputs (str or PromptList): A string or PromptDict.
                 The PromptDict should be organized in OpenCompass'
                 API format.
             max_out_len (int): The maximum length of the output.
@@ -189,12 +180,8 @@ class OpenAI(BaseAPIModel):
                 messages.append(msg)
 
         # Hold out 100 tokens due to potential errors in tiktoken calculation
-        try:
-            max_out_len = min(
-                max_out_len,
-                context_window - self.get_token_len(str(input)) - 100)
-        except KeyError:
-            max_out_len = max_out_len
+        max_out_len = min(
+            max_out_len, context_window - self.get_token_len(str(input)) - 100)
         if max_out_len <= 0:
             return ''
 
@@ -220,7 +207,7 @@ class OpenAI(BaseAPIModel):
             header = {
                 'Authorization': f'Bearer {key}',
                 'content-type': 'application/json',
-                'api-key': key,
+                'alles-apin-token': key,
             }
 
             if self.orgs:
@@ -236,11 +223,10 @@ class OpenAI(BaseAPIModel):
                     messages=messages,
                     max_tokens=max_out_len,
                     n=1,
-                    logprobs=self.logprobs,
-                    top_logprobs=self.top_logprobs,
                     stop=None,
                     temperature=temperature,
                 )
+                data = {**data, **self.gen_params}
                 raw_response = requests.post(self.url,
                                              headers=header,
                                              data=json.dumps(data))
@@ -253,28 +239,24 @@ class OpenAI(BaseAPIModel):
                 self.logger.error('JsonDecode error, got',
                                   str(raw_response.content))
                 continue
-            self.logger.debug(str(response))
             try:
-                if self.logprobs:
-                    return response['choices']
-                else:
-                    return response['choices'][0]['message']['content'].strip()
+                response = response.get('data', response)
+                return response['choices'][0]['message']['content'].strip()
             except KeyError:
                 if 'error' in response:
                     if response['error']['code'] == 'rate_limit_exceeded':
-                        time.sleep(10)
+                        time.sleep(1)
                         self.logger.warn('Rate limit exceeded, retrying...')
                         continue
                     elif response['error']['code'] == 'insufficient_quota':
                         self.invalid_keys.add(key)
                         self.logger.warn(f'insufficient_quota key: {key}')
                         continue
-                    elif response['error']['code'] == 'invalid_prompt':
-                        self.logger.warn('Invalid prompt:', str(input))
-                        return ''
 
                     self.logger.error('Find error message in response: ',
                                       str(response['error']))
+            except TypeError:
+                self.logger.error('Error response: ', str(response))
             max_num_retries += 1
 
         raise RuntimeError('Calling OpenAI failed after retrying for '
@@ -292,8 +274,11 @@ class OpenAI(BaseAPIModel):
         Returns:
             int: Length of the input tokens
         """
-        enc = self.tiktoken.encoding_for_model(self.path
-                                               or self.tokenizer_path)
+        if self.path in self.tiktoken.model.MODEL_TO_ENCODING:
+            enc = self.tiktoken.encoding_for_model(self.path)
+        else:
+            # Defaults to use the tokenizer of GPT-4
+            enc = self.tiktoken.encoding_for_model('gpt-4')
         return len(enc.encode(prompt))
 
     def bin_trim(self, prompt: str, num_token: int) -> str:
@@ -339,3 +324,4 @@ class OpenAI(BaseAPIModel):
         elif self.mode == 'rear':
             prompt = sep.join(words[:l])
         return prompt
+
