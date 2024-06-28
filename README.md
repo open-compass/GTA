@@ -142,7 +142,73 @@ conda activate opencompass
 cd opencompass
 pip install -e .
 ```
-2. Infer and evaluate with OpenCompass.
+2. Modify the config file at ```configs/eval_gta_bench.py``` as below.
+
+The ip and port number of **openai_api_base** is the ip of your model service and the port number you specified when using lmdeploy.
+
+The ip and port number of **tool_server** is the ip of your tool service and the port number you specified when using agentlego.
+
+```
+models = [
+  dict(
+        abbr='qwen1.5-7b-chat',
+        type=LagentAgent,
+        agent_type=ReAct,
+        max_turn=10,
+        llm=dict(
+            type=OpenAI,
+            path='qwen1.5-7b-chat',
+            key='EMPTY',
+            openai_api_base='http://10.140.1.17:12580/v1/chat/completions',
+            query_per_second=1,
+            max_seq_len=4096,
+            stop='<|im_end|>',
+        ),
+        tool_server='http://10.140.0.138:16181',
+        tool_meta='data/gta_dataset/toolmeta.json',
+        batch_size=8,
+    ),
+]
+```
+
+If you infer and evaluate in **step-by-step** mode, you should comment out **tool_server** and enable **tool_meta** in ```configs/eval_gta_bench.py```, and set infer mode and eval mode to **every_with_gt** in ```configs/datasets/gta_bench.py```:
+
+```
+gta_bench_infer_cfg = dict(
+    prompt_template=dict(
+        type=PromptTemplate,
+        template="""{questions}""",
+    ),
+    retriever=dict(type=ZeroRetriever),
+    inferencer=dict(type=AgentInferencer, infer_mode='every_with_gt'),
+)
+gta_bench_eval_cfg = dict(evaluator=dict(type=GTABenchEvaluator, mode='every_with_gt'))
+```
+
+If you infer and evaluate in **end-to-end** mode, you should comment out **tool_meta** and enable **tool_server** in ```configs/eval_gta_bench.py```, and set infer mode and eval mode to **every** in ```configs/datasets/gta_bench.py```:
+
+```
+gta_bench_infer_cfg = dict(
+    prompt_template=dict(
+        type=PromptTemplate,
+        template="""{questions}""",
+    ),
+    retriever=dict(type=ZeroRetriever),
+    inferencer=dict(type=AgentInferencer, infer_mode='every'),
+)
+gta_bench_eval_cfg = dict(evaluator=dict(type=GTABenchEvaluator, mode='every'))
+```
+
+3. Infer and evaluate with OpenCompass.
+```
+# infer only
+python run.py configs/eval_gta_bench.py --max-num-workers 32 --debug --mode infer
+```
+```
+# evaluate only
+# srun -p llmit -q auto python run.py configs/eval_gta_bench.py --max-num-workers 32 --debug --reuse [time_stamp_of_prediction_file] --mode eval
+srun -p llmit -q auto python run.py configs/eval_gta_bench.py --max-num-workers 32 --debug --reuse 20240628_115514 --mode eval
+```
 ```
 # infer and evaluate
 python run.py configs/eval_gta_bench.py -p llmit -q auto --max-num-workers 32 --debug
