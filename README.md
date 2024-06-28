@@ -30,6 +30,10 @@ GTA is a benchmark to evaluate the tool-use capability of LLM-based agents in re
  <img src="figs/dataset.jpg" width="800"/>
 </div>
 
+The comparison of GTA queries with AI-generated queries is shown in the table below. The steps and tool types for queries in ToolBench and m\&m's are explicitly stated, as marked in red and blue. The queries in APIBench are simple, only containing one step. Our GTA's queries are both step-implicit and tool-implicit.
+<div align="center">
+ <img src="figs/implicit.jpg" width="800"/>
+</div>
 ## 📣 What's New
 
 - **[2024.x.xx]** Paper available on Arxiv. ✨✨✨
