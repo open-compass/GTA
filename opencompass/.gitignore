@@ -122,7 +122,6 @@ turbomind/
 *.gz
 *.gz.*
 *.png
-*.txt
 *.jpg
 *.json
 *.jsonl
