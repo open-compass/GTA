@@ -1,87 +1,9 @@
 from copy import deepcopy
-import types
-import json
 from typing import List, Tuple
 
 from mmengine.registry import Registry
 
 REGISTRY = Registry('helper')
-
-try:
-    import lagent
-    import agentlego
-except ImportError:
-    lagent = None
-    agentlego = None
-
-class DummyTool(agentlego.tools.BaseTool):
-
-    def __init__(self, toolmeta):
-        self.toolmeta = agentlego.schema.ToolMeta.from_json_dict(toolmeta)
-        self.set_parser(agentlego.parsers.DefaultParser)
-        self._is_setup = False
-
-    def apply(self, *args, **kwargs):
-        return 'Dummy Result'
-
-def dummy_action_executor(tools):
-    return lagent.ActionExecutor(
-        actions=[DummyTool(cfg).to_lagent() for cfg in tools])
-
-
-def model_adapter(model):
-    """Modify the generate method to accept and return single item."""
-    if getattr(model, '_generate_is_wrapped', False):
-        # Avoid wrap twice.
-        return model
-
-    from opencompass.utils import PromptList
-
-    def chat(self, inputs, *args, **kwargs):
-        prompt = PromptList()
-        for item in inputs:
-            msg = {'prompt': item['content']}
-            if item['role'] == 'user':
-                msg['role'] = 'HUMAN'
-            elif item['role'] == 'assistant':
-                msg['role'] = 'BOT'
-            elif item['role'] == 'system':
-                msg['role'] = 'SYSTEM'
-            prompt.append(msg)
-        return self.generate([prompt], *args, **kwargs)[0]
-
-    model.chat = types.MethodType(chat, model)
-    setattr(model, '_generate_is_wrapped', True)
-    return model
-
-
-def react_style_history(history, files, protocol) -> List[dict]:
-    from lagent.schema import ActionReturn
-    inner_steps = []
-    if files:
-        prompt = 'The related files are at ' + ', '.join(f'`{file["path"]}`'
-                                                         for file in files)
-        inner_steps.append(dict(role='system', content=prompt))
-    for step in history:
-        if step['role'] == 'user':
-            inner_steps.append(dict(role='user', content=step['content']))
-        elif step['role'] == 'assistant' and step.get('tool_calls'):
-            name = step['tool_calls'][0]['function']['name']
-            args = step['tool_calls'][0]['function']['arguments']
-            response = "{action}{name}\n{action_input}{args}".format(
-                action=protocol.action['begin'],
-                name=name,
-                action_input=protocol.action_input['begin'],
-                args=json.dumps(args),
-            )
-            inner_steps.append(dict(role='assistant', content=response))
-        elif step['role'] == 'tool' and step.get('content'):
-            # action= ActionReturn(result=[dict(type='text', content=step['content'])])
-            action= ActionReturn(result=[step['content']])
-            inner_steps.append(dict(role='system', content=action.format_result()))
-        elif step['role'] == 'assistant' and step.get('content'):
-            inner_steps.append(dict(role='assistant', content=step['content']))
-    return inner_steps
 
 
 class LagentAgent:
@@ -91,52 +13,41 @@ class LagentAgent:
     """
     is_api = True
 
-    def __init__(self,
-                 agent_type,
-                 llm,
-                 actions=None,
-                 tool_server=None,
-                 tool_meta=None,
-                 protocol=None,
-                 **kwargs):
-        llm = model_adapter(REGISTRY.build(llm))
+    def __init__(self, agent_type, llm, actions=None, protocol=None, **kwargs):
+        llm = REGISTRY.build(llm)
         agent_cfg = {'type': agent_type, 'llm': llm, **kwargs}
 
-        tools = {}
         if actions is not None:
+            from lagent.actions import ActionExecutor
+            executor = ActionExecutor([])
             for action in actions:
                 action = REGISTRY.build(action)
-                if isinstance(action, agentlego.tools.BaseTool):
+                if 'agentlego' in type(action).__module__:
                     action = action.to_lagent()
-                tools[action.name] = action
-        if tool_server is not None:
-            from agentlego.tools.remote import RemoteTool
-            for tool in RemoteTool.from_server(tool_server):
-                tools[tool.name] = tool.to_lagent()
-        if tool_meta is not None:
-            metas = json.load(open(tool_meta, 'r'))
-            for meta in metas.values():
-                tool = DummyTool(meta).to_lagent()
-                tools.setdefault(tool.name, tool)
-
-        self.tools = tools
-
+                executor.add_action(action)
+            agent_cfg['action_executor'] = executor
         if protocol is not None:
             protocol = REGISTRY.build(protocol)
             agent_cfg['protocol'] = protocol
 
-        from lagent import BaseAgent, ActionExecutor
-        agent_cfg['action_executor'] = ActionExecutor(tools.values())
+        from lagent import BaseAgent
         self.agent: BaseAgent = REGISTRY.build(agent_cfg)
 
     def reset(self):
-        pass
+        self.agent._session_history = []
+        for action in self.agent._action_executor.actions:
+            if hasattr(action, 'reset'):
+                action.reset()
+
+    def set_history(self, history):
+        self.agent._session_history = deepcopy(history)
 
     def gt_response(self, prompt):
         if 'CIReAct' in str(self.agent.__class__):
-            gold = prompt
-            prompt = f"""{self.agent._protocol.action['begin']} IPythonInterpreter
-{self.agent._protocol.action_input['begin']} ```python\n{gold}\n```\n"""  # noqa
+            thought, gold = prompt.split('**split**')
+            prompt = f"""{self.agent._protocol.thought['begin']} {thought}\
+\n{self.agent._protocol.action['begin']} IPythonInterpreter\n\
+{self.agent._protocol.action_input['begin']}```python\n{gold}\n```\n"""  # noqa
             action_input = dict(
                 command=f"""```python\n{gold}\n```\n""",
                 timeout=120,
@@ -160,85 +71,34 @@ class LagentAgent:
     def template_parser(self, value):
         self.agent._llm.template_parser = value
 
-    def next_step(self, history, resources=None, stop=False):
-        from lagent.schema import ActionReturn
-        tools = []
-        files = []
-        if resources is not None:
-            tools = [
-                self.tools[item['name']] for item in resources
-                if item['type'] == 'tool'
-            ]
-            files = [item for item in resources if item['type'] == 'file']
+    def chat(self,
+             user_input: str,
+             history: List[dict] = None) -> Tuple[str, List[dict], List[dict]]:
+        """Chat with agent."""
+        if history:
+            self.agent._session_history = history
 
-        action_executor = lagent.ActionExecutor(actions=tools)
-        if stop:
-            history = history + [{'role': 'user', 'content': 'Please summarize the chat history and give a final answer. Do not call any tools.'}]
-        history = react_style_history(history, files, self.agent._protocol)
-        prompt = self.agent._protocol.format(chat_history=[],
-                                             inner_step=history,
-                                             action_executor=action_executor)
-        response = self.agent._llm.chat(prompt)
-        thought, action_name, action_input = self.agent._protocol.parse(
-            response, action_executor)
-        action: ActionReturn = action_executor(action_name, action_input)
+        from lagent.schema import ActionReturn, AgentReturn
+        generation: AgentReturn = self.agent.chat(user_input)
 
-        if action.type == action_executor.finish_action.name:
-            # breakpoint()
-            return dict(role='assistant', content=action.format_result())
-        else:
-            msg = {'role': 'assistant'}
-            args = action.args
-            if action.errmsg is not None:
-                msg['error'] = dict(type=action.state.name, msg=action.errmsg)
-                # Handle fallback args
-                args = args.get('inputs', args)
-            function = dict(name=action.type, arguments=args)
-            msg['tool_calls'] = [dict(type='function', function=function)]
-            # breakpoint()
-            return msg
-
-    def chat(self, query, memory=None, resources=None):
-        tools = []
-        files = []
-        if resources is not None:
-            tools = {
-                item['name']: self.tools[item['name']]
-                for item in resources if item['type'] == 'tool'
-            }
-            files = [item for item in resources if item['type'] == 'file']
-
-        action_executor = self.agent._action_executor
-        action_executor.actions = tools
-        if memory is None:
-            memory = []
-            if files:
-                prompt = 'The related files are at ' + ', '.join(
-                    f'`{file["path"]}`' for file in files)
-                memory.append(dict(role='user', content=prompt))
-        memory.append(dict(role='user', content=query))
-
-        agent_return = self.agent.chat(memory)
-
+        inner_steps = generation.inner_steps
+        answer = generation.response
         steps = []
-        for action in agent_return.actions:
-            if action.type == action_executor.finish_action.name:
-                step = dict(role='assistant', content=action.format_result())
-                steps.append(step)
-            else:
-                step = {'role': 'assistant'}
-                args = action.args
-                if action.errmsg is not None:
-                    step['error'] = dict(type=action.state.name,
-                                         msg=action.errmsg)
-                    # Handle fallback args
-                    args = args.get('inputs', args)
-                function = dict(name=action.type, arguments=args)
-                step['tool_calls'] = [dict(type='function', function=function)]
-                steps.append(step)
-                steps.append(dict(role='tool', content=action.result))
-        return steps, memory
 
+        for step in generation.actions:
+            step: ActionReturn
+            steps.append(
+                dict(
+                    type=step.type,
+                    args=step.args,
+                    result=step.result,
+                    thought=step.thought,
+                    state=int(step.state),
+                    errmsg=step.errmsg,
+                    valid=int(step.valid),
+                ))
+
+        return answer, steps, inner_steps
 
 
 FORCE_STOP_PROMPT_EN = (

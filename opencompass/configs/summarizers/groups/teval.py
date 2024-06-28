@@ -71,33 +71,3 @@ for group in _base_summary_groups:
     group['name'] = group['name'] + '_zh'
     group['subsets'] = [[subset[0] + '_zh', subset[1]] for subset in group['subsets']]
     teval_summary_groups.append(group)
-
-# INTERNAL_BEGIN
-# base -p10-
-for group in _base_summary_groups:
-    group = deepcopy(group)
-    group['name'] = group['name'].replace('teval', 'teval-p10')
-    group['subsets'] = [[subset[0].replace('teval', 'teval-p10'), subset[1]] for subset in group['subsets']]
-    teval_summary_groups.append(group)
-
-# base -p10- _zh
-for group in _base_summary_groups:
-    group = deepcopy(group)
-    group['name'] = group['name'].replace('teval', 'teval-p10') + '_zh'
-    group['subsets'] = [[subset[0].replace('teval', 'teval-p10') + '_zh', subset[1]] for subset in group['subsets']]
-    teval_summary_groups.append(group)
-
-# base -mus-p10-
-for group in _base_summary_groups:
-    group = deepcopy(group)
-    group['name'] = group['name'].replace('teval', 'teval-mus-p10')
-    group['subsets'] = [[subset[0].replace('teval', 'teval-mus-p10'), subset[1]] for subset in group['subsets']]
-    teval_summary_groups.append(group)
-
-# base -mus-p10- _zh
-for group in _base_summary_groups:
-    group = deepcopy(group)
-    group['name'] = group['name'].replace('teval', 'teval-mus-p10') + '_zh'
-    group['subsets'] = [[subset[0].replace('teval', 'teval-mus-p10') + '_zh', subset[1]] for subset in group['subsets']]
-    teval_summary_groups.append(group)
-# INTERNAL_END

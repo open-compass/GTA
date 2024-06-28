@@ -3,8 +3,8 @@ from opencompass.models import VLLM
 
 _meta_template = dict(
     round=[
-        dict(role="HUMAN", end='\n\n'),
-        dict(role="BOT", begin="### Response:", end='</s>', generate=True),
+        dict(role='HUMAN', end='\n\n'),
+        dict(role='BOT', begin='### Response:', end='</s>', generate=True),
     ],
 )
 
@@ -18,7 +18,7 @@ models = [
         max_seq_len=2048,
         batch_size=32,
         generation_kwargs=dict(temperature=0),
-        end_str='</s>',
+        stop_words=['</s>'],
         run_cfg=dict(num_gpus=1, num_procs=1),
     )
 ]

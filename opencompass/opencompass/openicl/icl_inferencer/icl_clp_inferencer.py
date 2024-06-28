@@ -2,7 +2,6 @@
 
 import itertools
 import os
-from functools import partial  # INTERNAL
 from typing import List, Optional
 
 import torch.nn.functional as F
@@ -136,9 +135,6 @@ class CLPInferencer(BaseInferencer):
                 # in case tokenizer returns list for single token
                 choice_ids = list(itertools.chain(*choice_ids))
 
-                # INTERNAL_BEGIN
-                get_token_len = partial(self.model.get_token_len, eos=False)
-                # INTERNAL_END
             get_token_len = self.model.get_token_len
 
             if hasattr(self.model.tokenizer, 'padding_side'):

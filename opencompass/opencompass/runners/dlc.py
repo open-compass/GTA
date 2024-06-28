@@ -118,6 +118,7 @@ class DLCRunner(BaseRunner):
                 conda_env_name = self.aliyun_cfg['conda_env_name']
                 shell_cmd = (f'source {bashrc_path}; '
                              f'conda activate {conda_env_name}; ')
+                shell_cmd += f'export PYTHONPATH={pwd}:$PYTHONPATH; '
             else:
                 # using public conda env
                 # users can also set `python_env_path` to their
@@ -140,7 +141,7 @@ class DLCRunner(BaseRunner):
 
             hf_offline = self.aliyun_cfg.get('hf_offline', True)
             if hf_offline:
-                shell_cmd += 'export HF_DATASETS_OFFLINE=1; export TRANSFORMERS_OFFLINE=1; export HF_EVALUATE_OFFLINE=1; '  # noqa: E501
+                shell_cmd += 'export HF_DATASETS_OFFLINE=1; export TRANSFORMERS_OFFLINE=1; export HF_EVALUATE_OFFLINE=1; export HF_HUB_OFFLINE=1; '  # noqa: E501
 
             http_proxy = self.aliyun_cfg.get('http_proxy')
             if http_proxy is not None:
@@ -151,20 +152,32 @@ class DLCRunner(BaseRunner):
             if hf_endpoint is not None:
                 shell_cmd += f'export HF_ENDPOINT={hf_endpoint}; '
 
+            extra_envs = self.aliyun_cfg.get('extra_envs')
+            if extra_envs is not None:
+                for extra_env in extra_envs:
+                    shell_cmd += f'export {extra_env}; '
+
             shell_cmd += f'cd {pwd}; '
+            shell_cmd += 'umask 0000; '
             shell_cmd += '{task_cmd}'
 
-            tmpl = ('dlc create job'
-                    f" --command '{shell_cmd}'"
-                    f' --name {task_name[:512]}'
-                    ' --kind BatchJob'
-                    f" -c {self.aliyun_cfg['dlc_config_path']}"
-                    f" --workspace_id {self.aliyun_cfg['workspace_id']}"
-                    ' --worker_count 1'
-                    f' --worker_cpu {max(num_gpus * 8, 32)}'
-                    f' --worker_gpu {num_gpus}'
-                    f' --worker_memory {max(num_gpus * 128, 256)}'
-                    f" --worker_image {self.aliyun_cfg['worker_image']}")
+            # set priority to 1 as default
+            task_priority = self.aliyun_cfg.get('priority', 1)
+
+            tmpl = (
+                'dlc submit pytorchjob'
+                f" --command '{shell_cmd}'"
+                f' --name {task_name[:512]}'
+                f" --config {self.aliyun_cfg['dlc_config_path']}"
+                f" --workspace_id {self.aliyun_cfg['workspace_id']}"
+                f" --resource_id {self.aliyun_cfg['resource_id']}"
+                f' --priority {task_priority}'
+                ' --workers 1'
+                f' --worker_cpu {max(num_gpus * 8, 12)}'
+                f' --worker_gpu {num_gpus}'
+                f' --worker_memory {max(num_gpus * 128, 192)}Gi'
+                f" --worker_image {self.aliyun_cfg['worker_image']}"
+                f" --data_sources {','.join(self.aliyun_cfg['data_sources'])}")
             get_cmd = partial(task.get_command,
                               cfg_path=param_file,
                               template=tmpl)
@@ -185,22 +198,41 @@ class DLCRunner(BaseRunner):
                 time.sleep(random.randint(0, 10))
 
             def _run_within_retry():
-                output = subprocess.getoutput(cmd)
-                match = re.search(r'\|\s+(dlc[0-9a-z]+)\s+\|', output)
-                if match is None:
-                    raise RuntimeError(
-                        f'Failed to launch dlc job for {output}')
+                num_retry_to_start = 5
+                index_to_start = 0
+                while index_to_start < num_retry_to_start:
+                    index_to_start += 1
+                    try:
+                        output = subprocess.getoutput(cmd)
+                    except BlockingIOError:
+                        output = ''
+                    match = re.search(r'\|\s+(dlc[0-9a-z]+)\s+\|', output)
+                    if match is None:
+                        stdout.write('Failed to get job id from output:')
+                        stdout.write(output)
+                        if index_to_start < num_retry_to_start:
+                            stdout.write(f'Retry #{index_to_start} starting')
+                        time.sleep(2)
+                        continue
+                    else:
+                        job_id = match.group(1)
+                        stdout.write(output)
+                        break
                 else:
-                    job_id = match.group(1)
-                stdout.write(output)
+                    raise RuntimeError(f'Cannot get job id from {output}')
 
                 pod_create_time = None
                 pri_time = None
                 initial_time = datetime.datetime.now()
+
+                url = f"https://pai.console.aliyun.com/?regionId=cn-wulanchabu&workspaceId={self.aliyun_cfg['workspace_id']}#/dlc/jobs/{job_id}"  # noqa: E501
+                logger = get_logger()
+                logger.debug('\n' + '*' * 168 + '\n' + url + '\n' + '*' * 168)
+
                 while True:
                     # 1. Avoid to request dlc too frequently.
                     # 2. DLC job may not be ready immediately after creation.
-                    for _ in range(5):
+                    for _ in range(20):
                         time.sleep(2)
                         try:
                             job_info = json.loads(
@@ -233,11 +265,14 @@ class DLCRunner(BaseRunner):
                     cur_time = (pod_create_time +
                                 elasped_time).strftime('%Y-%m-%dT%H:%M:%SZ')
                     logs_cmd = ('dlc logs'
-                                f' {job_id} {job_id}-worker-0'
+                                f' {job_id} {job_id}-master-0'
                                 f" -c {self.aliyun_cfg['dlc_config_path']}"
                                 f' --start_time {pri_time}'
                                 f' --end_time {cur_time}')
-                    log_output = subprocess.getoutput(logs_cmd)
+                    try:
+                        log_output = subprocess.getoutput(logs_cmd)
+                    except BlockingIOError:
+                        log_output = '[WARN] No logs found for the pod'
 
                     if '[WARN] No logs found for the pod' not in log_output:
                         pri_time = cur_time

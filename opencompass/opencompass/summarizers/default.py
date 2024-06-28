@@ -226,12 +226,12 @@ class DefaultSummarizer:
 
         return raw_results, parsed_results, dataset_metrics, dataset_eval_mode
 
-    def _format_table(self, parsed_results, dataset_metrics, dataset_eval_mode):
+    def _format_table(self, parsed_results, dataset_metrics, dataset_eval_mode, required_dataset_abbrs=None, skip_all_slash=False):
         dataset_abbrs = [dataset_abbr_from_cfg(dataset) for dataset in self.dataset_cfgs]
         prompt_version = {dataset_abbr_from_cfg(d): get_prompt_hash(d)[:6] for d in self.dataset_cfgs}
 
         summarizer_dataset_abbrs = []
-        if self.dataset_abbrs is None:
+        if required_dataset_abbrs is None:
             # display all dataset metrics included in the config
             for dataset_abbr in dataset_abbrs:
                 if dataset_abbr in dataset_metrics:
@@ -246,7 +246,7 @@ class DefaultSummarizer:
                         summarizer_dataset_abbrs.append((dataset_abbr, metric))
         else:
             # follow the required order
-            for item in self.dataset_abbrs:
+            for item in required_dataset_abbrs:
                 if isinstance(item, str):
                     summarizer_dataset_abbrs.append((item, None))
                 elif isinstance(item, (list, tuple)):
@@ -257,14 +257,16 @@ class DefaultSummarizer:
         table.append(header)
         for dataset_abbr, metric in summarizer_dataset_abbrs:
             if dataset_abbr not in dataset_metrics:
-                table.append([dataset_abbr, '-', '-', '-'] + ['-'] * len(self.model_abbrs))
+                if not skip_all_slash:
+                    table.append([dataset_abbr, '-', '-', '-'] + ['-'] * len(self.model_abbrs))
                 continue
             if metric is None:
                 metric = dataset_metrics[dataset_abbr][0]
             elif metric in dataset_metrics[dataset_abbr]:
                 pass
             else:
-                table.append([dataset_abbr, '-', '-', '-'] + ['-'] * len(self.model_abbrs))
+                if not skip_all_slash:
+                    table.append([dataset_abbr, '-', '-', '-'] + ['-'] * len(self.model_abbrs))
                 continue
 
             row = [dataset_abbr, prompt_version.get(dataset_abbr, '-'), metric, dataset_eval_mode.get(dataset_abbr, '-')]
@@ -306,7 +308,7 @@ class DefaultSummarizer:
             text = f'{time_str}\n' + \
                     'tabulate format\n' + \
                     '^' * 128 + '\n' + \
-                    tabulate.tabulate(table, headers='firstrow') + '\n' + \
+                    tabulate.tabulate(table, headers='firstrow', floatfmt='.2f') + '\n' + \
                     '$' * 128 + '\n\n' + \
                     '-' * 128 + ' THIS IS A DIVIDER ' + '-' * 128 + '\n\n' + \
                     'csv format\n' + \
@@ -338,13 +340,13 @@ class DefaultSummarizer:
             self._calculate_group_metrics(raw_results, parsed_results, dataset_metrics, dataset_eval_mode)
 
         # format table
-        table = self._format_table(parsed_results, dataset_metrics, dataset_eval_mode)
+        table = self._format_table(parsed_results, dataset_metrics, dataset_eval_mode, required_dataset_abbrs=self.dataset_abbrs)
 
         # format raw txt
         raw_txts = self._format_raw_txt(raw_results)
 
         # output to screen
-        print(tabulate.tabulate(table, headers='firstrow'))
+        print(tabulate.tabulate(table, headers='firstrow', floatfmt='.2f'))
 
         # output to .text / .csv files
         self._output_to_file(output_path, time_str, table, raw_txts)

@@ -21,10 +21,6 @@ class TEvalEvaluator:
 
     def __init__(self, subset) -> None:
 
-        # INTERNAL_BEGIN
-        from ilagent.evaluators import HallucinateEvaluator
-
-        # INTERNAL_END
         from opencompass.datasets.teval.evaluators import (
             InstructEvaluator, PlanningEvaluator,
             ReasonRetrieveUnderstandEvaluator, ReviewEvaluator)
@@ -74,12 +70,6 @@ class TEvalEvaluator:
                 default_prompt_type='str',
                 eval_type='understand',
                 bert_score_model='thenlper/gte-large-zh')
-        # INTERNAL_BEGIN
-        elif subset == 'hallucinate_react':
-            self.evaluator = HallucinateEvaluator('', prompt_type='react')
-        elif subset == 'hallucinate_stream':
-            self.evaluator = HallucinateEvaluator('', prompt_type='stream')
-        # INTERNAL_END
         else:
             raise NotImplementedError
 

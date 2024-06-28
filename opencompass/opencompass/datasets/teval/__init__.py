@@ -38,16 +38,6 @@ class TEvalDataset(BaseDataset):
         return dataset
 
 
-# INTERNAL_BEGIN
-class TEvalP10Dataset(TEvalDataset):
-
-    def load(self, path: str, name: str):
-        dataset = super().load(path, name)
-        # Only get top 10% dataset
-        dataset['test'] = dataset['test'].train_test_split(
-            train_size=0.1, shuffle=False)['train']
-        return dataset
-# INTERNAL_END
 
 
 @TEXT_POSTPROCESSORS.register_module('teval')
