@@ -106,7 +106,16 @@ huggingface-cli download --resume-download Qwen/Qwen1.5-7B-Chat --local-dir ./mo
 ```
 conda create -n lmdeploy python=3.10
 conda activate lmdeploy
+```
+For CUDA 12:
+```
 pip install lmdeploy
+```
+For CUDA 11+:
+```
+export LMDEPLOY_VERSION=0.4.0
+export PYTHON_VERSION=310
+pip install https://github.com/InternLM/lmdeploy/releases/download/v${LMDEPLOY_VERSION}/lmdeploy-${LMDEPLOY_VERSION}+cu118-cp${PYTHON_VERSION}-cp${PYTHON_VERSION}-manylinux2014_x86_64.whl --extra-index-url https://download.pytorch.org/whl/cu118
 ```
 3. Launch a model service.
 ```
@@ -116,7 +125,7 @@ lmdeploy serve api_server ./models/qwen1.5-7b-chat --server-port 12580 --model-n
 ### Deploy Tools
 1. Install [AgentLego](https://github.com/InternLM/agentlego).
 ```
-conda create -n agentlego python=3.10
+conda create -n agentlego python=3.11.9
 conda activate agentlego
 cd agentlego
 pip install -e .
