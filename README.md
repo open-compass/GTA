@@ -158,7 +158,9 @@ agentlego-server start --port 16181 --extra ./benchmark.py  `cat benchmark_tooll
 ```
 conda create --name opencompass python=3.10 pytorch torchvision pytorch-cuda -c nvidia -c pytorch -y
 conda activate opencompass
-cd opencompass
+cd agentlego
+pip install -e .
+cd ../opencompass
 pip install -e .
 ```
 2. Modify the config file at ```configs/eval_gta_bench.py``` as below.
