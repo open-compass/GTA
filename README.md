@@ -48,6 +48,12 @@ GTA comprises a total of 229 questions. The basic dataset statistics is presente
  <img src="figs/statistics.jpg" width="800"/>
 </div>
 
+The detailed information of 14 tools are shown in the table below.
+
+<div align="center">
+ <img src="figs/tools.jpg" width="800"/>
+</div>
+
 ## 🏆 Leader Board
 
 We evaluate the language models in two modes:
@@ -137,8 +143,12 @@ conda create -n agentlego python=3.11.9
 conda activate agentlego
 cd agentlego
 pip install -r requirements_all.txt
+pip install agentlego
 pip install -e .
+mim install mmcv==2.1.0
 ```
+Open ```~/anaconda3/envs/test_agentlego/lib/python3.11/site-packages/transformers/modeling_utils.py```, then set ```_supports_sdpa = False``` to ```_supports_sdpa = True``` in line 1279.
+
 2. Deploy tools for GTA benchmark.
 ```
 agentlego-server start --port 16181 --extra ./benchmark.py  `cat benchmark_toollist.txt` --host 0.0.0.0
