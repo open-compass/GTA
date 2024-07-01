@@ -147,7 +147,7 @@ pip install agentlego
 pip install -e .
 mim install mmcv==2.1.0
 ```
-Open ```~/anaconda3/envs/test_agentlego/lib/python3.11/site-packages/transformers/modeling_utils.py```, then set ```_supports_sdpa = False``` to ```_supports_sdpa = True``` in line 1279.
+Open ```~/anaconda3/envs/agentlego/lib/python3.11/site-packages/transformers/modeling_utils.py```, then set ```_supports_sdpa = False``` to ```_supports_sdpa = True``` in line 1279.
 
 2. Deploy tools for GTA benchmark.
 ```
