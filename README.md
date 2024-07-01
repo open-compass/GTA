@@ -1,21 +1,11 @@
 # GTA: A Benchmark for General Tool Agents
 
-<!-- <div align="center">
-
-<img src="https://github.com/open-compass/opencompass/assets/28834990/c285f051-f6cb-4425-8045-863bb94095ed" width="400">
-  <div> </div>
-    <b><font size="3">MathBench</font></b>
-    <div> 
-  </div>
-</div> -->
-
-
 <div align="center">
 
+[⬇️ [Dataset](https://github.com/open-compass/GTA/releases/download/v0.1.0/gta_dataset.zip)]
 [📃 [Paper](https://xxx)]
 [🌐 [Project Page](https://xxx)]
 [🤗 [Hugging Face](https://huggingface.co/datasets/Jize1/GTA)]
-[📌 [License](https://github.com/open-compass/GTA/blob/main/LICENSE.txt)]
 </div>
 
 ## 🌟 Introduction
