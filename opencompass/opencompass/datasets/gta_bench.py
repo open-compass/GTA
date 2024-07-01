@@ -198,7 +198,8 @@ class GTABenchEvaluator(BaseEvaluator):
             recall = {'perception': 0, 'operation': 0, 'logic': 0, 'creativity': 0}
             f1 = {'perception': 0, 'operation': 0, 'logic': 0, 'creativity': 0}
             metrics = {
-                'pass_rate': 0, 'answer_acc': 0, 'tool_call': 0, 'tool_call_error': 0
+                'answer_acc': 0, 'tool_call': 0, 'tool_call_error': 0,
+                'perception': 0, 'operation': 0, 'logic': 0, 'creativity': 0
             }
 
             for preds, gts, ref in zip(predictions, gold, references):
@@ -212,18 +213,11 @@ class GTABenchEvaluator(BaseEvaluator):
                         metrics['answer_acc'] += self.iscorrect(pred_answer, ref)
                     elif isinstance(ref, list) and pred_answer:
                         metrics['answer_acc'] += self.simscore(pred_answer, ref)
-                error_flag = 0
-                tool_flag = 0
                 for pred in preds[0]:
                     if 'tool_calls' in pred:
-                        tool_flag = 1
                         metrics['tool_call'] += 1
                         if 'error' in pred:
                             metrics['tool_call_error'] += 1
-                    if 'error' in pred:
-                        error_flag = 1                       
-                if pred_type == 'answer' and pred_answer and not error_flag and tool_flag:
-                    metrics['pass_rate'] += 1
                 
                 pred_tool_calls = []
                 for pred in preds[0]:
@@ -243,7 +237,6 @@ class GTABenchEvaluator(BaseEvaluator):
                 recall[tool_type] = metrics[tool_type] / total[tool_type]
                 f1[tool_type] = 2 * precision[tool_type] * recall[tool_type] / (precision[tool_type] + recall[tool_type] + 1e-5)
             return dict(
-                pass_rate=metrics['pass_rate'] / total['all'] * 100,
                 answer_acc=metrics['answer_acc'] / total['answer'] * 100,
                 tool_call=metrics['tool_call'],
                 tool_call_error=metrics['tool_call_error'],
