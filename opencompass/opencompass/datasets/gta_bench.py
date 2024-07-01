@@ -164,7 +164,7 @@ class GTABenchEvaluator(BaseEvaluator):
                 for pred, gt in zip(preds, gts):
                     pred_type, pred_ = self.get_response_type(pred)
                     gt_type, gt_ = self.get_response_type(gt)
-                    if pred_type == gt_type and 'error' not in pred: # if 'error' not in pred:
+                    if pred_type == gt_type and 'error' not in pred:
                         metrics['inst_align'] += 1
                     if gt_type == 'tool':
                         total['tool'] += 1
@@ -177,9 +177,7 @@ class GTABenchEvaluator(BaseEvaluator):
                         metrics['tool_acc'] += 1
                         if pred_['arguments'] == gt_['arguments']:
                             metrics['arg_acc'] += 1
-                    elif pred_type == gt_type == 'answer':# and not answer_flag:
-                        # if gt in pred:
-                        #     metrics['answer_acc'] += 1
+                    elif pred_type == gt_type == 'answer':
                         if isinstance(ref, dict):
                             metrics['answer_acc'] += self.iscorrect(pred_, ref)
                         elif isinstance(ref, list):
@@ -190,63 +188,20 @@ class GTABenchEvaluator(BaseEvaluator):
                 tool_acc=metrics['tool_acc'] / total['tool'] * 100,
                 arg_acc=metrics['arg_acc'] / total['tool'] * 100,
                 answer_acc=metrics['answer_acc'] / total['answer'] * 100,
-                # correct_num=metrics['answer_acc'],
-                # tool_num=total['tool'],
-                # answer_num=total['answer'],
                 tool_call=metrics['tool_call'],
                 tool_call_error=metrics['tool_call_error']
             )
         elif self.mode == 'every':
             total = {'all': 0, 'answer': 0, 'perception': 0, 'operation': 0, 'logic': 0, 'creativity': 0}
             total_predict = {'perception': 0, 'operation': 0, 'logic': 0, 'creativity': 0}
-            # total = {'all': 0, 'answer': 0}
-            metrics = {
-                'pass_rate': 0, 'answer_acc': 0, 'tool_call': 0, 'tool_call_error': 0,
-                'perception': 0, 'operation': 0, 'logic': 0, 'creativity': 0
-            }
             precision = {'perception': 0, 'operation': 0, 'logic': 0, 'creativity': 0}
             recall = {'perception': 0, 'operation': 0, 'logic': 0, 'creativity': 0}
             f1 = {'perception': 0, 'operation': 0, 'logic': 0, 'creativity': 0}
-            # metrics = {
-            #     'pass_rate': 0, 'answer_acc': 0, 'tool_call': 0, 'tool_call_error': 0
-            # }
-            # perception = ['OCR', 'ImageDescription', 'RegionAttributeDescription', 'TextToBbox']
-            # operation = ['DrawBox', 'AddText', 'GoogleSearch']
-            # logic = ['Calculator', 'Solver', 'Plot', 'MathOCR', 'CountGivenObject']
-            # creativity = ['TextToImage', 'ImageStylization']
-            # tag_total = {'p': 0, 'o': 0, 'l': 0, 'c': 0}
-            # tag_correct = {'p': 0, 'o': 0, 'l': 0, 'c': 0}
+            metrics = {
+                'pass_rate': 0, 'answer_acc': 0, 'tool_call': 0, 'tool_call_error': 0
+            }
 
             for preds, gts, ref in zip(predictions, gold, references):
-
-            #     if ref:
-            #         p_flag, o_flag, l_flag , c_flag = 0, 0, 0, 0
-            #         tag = []
-            #         for gt in gts[0]:
-            #             if 'tool_calls' in gt:
-            #                 tool_name = gt['tool_calls'][0]['function']['name']
-            #                 if tool_name in perception and not p_flag:
-            #                     tag.append('p')
-            #                     p_flag = 1
-            #                     tag_total['p'] += 1
-            #                 elif tool_name in operation and not o_flag:
-            #                     tag.append('o')
-            #                     o_flag = 1
-            #                     tag_total['o'] += 1
-            #                 elif tool_name in logic and not l_flag:
-            #                     tag.append('l')
-            #                     l_flag = 1
-            #                     tag_total['l'] += 1
-            #                 elif tool_name in creativity and not c_flag:
-            #                     tag.append('c')
-            #                     c_flag = 1
-            #                     tag_total['c'] += 1
-                # if tag not in tag_total:
-                #     tag_total[tag] = 1
-                #     tag_correct[tag] = 0
-                # else:
-                #     tag_total[tag] += 1
-
                 ref = json.loads(ref)
                 total['all'] += 1
                 if ref:
@@ -255,13 +210,8 @@ class GTABenchEvaluator(BaseEvaluator):
                 if pred_type == 'answer' and pred_answer and ref:
                     if isinstance(ref, dict) and pred_answer:
                         metrics['answer_acc'] += self.iscorrect(pred_answer, ref)
-                        # for t in tag:
-                        #     tag_correct[t] += correct
                     elif isinstance(ref, list) and pred_answer:
-                        # score = self.simscore(pred_answer, ref)
                         metrics['answer_acc'] += self.simscore(pred_answer, ref)
-                        # for t in tag:
-                        #     tag_correct[t] += score
                 error_flag = 0
                 tool_flag = 0
                 for pred in preds[0]:
@@ -275,10 +225,9 @@ class GTABenchEvaluator(BaseEvaluator):
                 if pred_type == 'answer' and pred_answer and not error_flag and tool_flag:
                     metrics['pass_rate'] += 1
                 
-
                 pred_tool_calls = []
                 for pred in preds[0]:
-                    if 'tool_calls' in pred and 'error' not in pred:
+                    if 'tool_calls' in pred:
                         tool_type = self.gettype(pred['tool_calls'][0]['function']['name'])
                         if tool_type in total_predict:
                             total_predict[tool_type] += 1
@@ -293,49 +242,15 @@ class GTABenchEvaluator(BaseEvaluator):
                 precision[tool_type] = metrics[tool_type] / (total_predict[tool_type] + 1e-5)
                 recall[tool_type] = metrics[tool_type] / total[tool_type]
                 f1[tool_type] = 2 * precision[tool_type] * recall[tool_type] / (precision[tool_type] + recall[tool_type] + 1e-5)
-                # pred_tool_calls = []
-                # for pred in preds[0]:
-                #     if 'tool_calls' in pred and 'error' not in pred:
-                #         pred_tool_calls.append(pred['tool_calls'][0]['function'])
-                # for gt in gts[0]:
-                #     if 'tool_calls' in gt:
-                #         tool_type = self.gettype(gt['tool_calls'][0]['function']['name'])
-                #         total[tool_type] += 1
-                #         if gt['tool_calls'][0]['function'] in pred_tool_calls:
-                #             metrics[tool_type] += 1
-                        # if gt['tool_calls'][0]['function']['name'] in [tool_call['name'] for tool_call in pred_tool_calls]:
-                        #     gt_arg = json.dumps(gt['tool_calls'][0]['function']['arguments'])
-                        #     max_score = 0
-                        #     for tool_call in pred_tool_calls:
-                        #         if tool_call['name'] == gt['tool_calls'][0]['function']['name']:
-                        #             pred_arg = json.dumps(tool_call['arguments'])
-                        #             score = self.bert_score(pred_arg, gt_arg) 
-                        #             if score > max_score:
-                        #                 max_score = score
-                        #     metrics[tool_type] += max_score              
-            
             return dict(
                 pass_rate=metrics['pass_rate'] / total['all'] * 100,
                 answer_acc=metrics['answer_acc'] / total['answer'] * 100,
                 tool_call=metrics['tool_call'],
                 tool_call_error=metrics['tool_call_error'],
-                # p_acc = tag_correct['p'] / tag_total['p']* 100,
-                # o_acc = tag_correct['o'] / tag_total['o']* 100,
-                # l_acc = tag_correct['l'] / tag_total['l']* 100,
-                # c_acc = tag_correct['c'] / tag_total['c']* 100
                 p_f1 = f1['perception'] * 100,
                 o_f1 = f1['operation'] * 100,
                 l_f1 = f1['logic'] * 100,
-                c_f1 = f1['creativity'] * 100,
-                # p_p = precision['perception'] * 100,
-                # o_p = precision['operation'] * 100,
-                # l_p = precision['logic'] * 100,
-                # c_p = precision['creativity'] * 100,
-                # p_r = recall['perception'] * 100,
-                # o_r = recall['operation'] * 100,
-                # l_r = recall['logic'] * 100,
-                # c_r = recall['creativity'] * 100,
+                c_f1 = f1['creativity'] * 100
             )
-            # {k: v / total for k, v in metrics.items()}
         else:
             raise NotImplementedError
