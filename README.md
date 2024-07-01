@@ -80,12 +80,12 @@ yi-6b-chat | 21.26 | 14.72 | 0 | 32.54 | 1.47 | 0 | 1.18 | 0 | 0.58
 
 ### Prepare GTA Dataset
 1. Clone this repo.
-```
+```shell
 git clone https://github.com/open-compass/GTA.git
 cd GTA
 ```
 2. Download the dataset from [release file](https://github.com/open-compass/GTA/releases/download/v0.1.0/gta_dataset.zip).
-```
+```shell
 mkdir ./opencompass/data
 ```
 Put it under the folder ```./opencompass/data/```. The structure of files should be:
@@ -101,34 +101,34 @@ GTA/
 
 ### Prepare Your Model
 1. Download the model weights.
-```
+```shell
 pip install -U huggingface_hub
 # huggingface-cli download --resume-download hugging/face/repo/name --local-dir your/local/path --local-dir-use-symlinks False
 huggingface-cli download --resume-download Qwen/Qwen1.5-7B-Chat --local-dir ~/models/qwen1.5-7b-chat --local-dir-use-symlinks False
 ```
 2. Install [LMDeploy](https://github.com/InternLM/lmdeploy).
-```
+```shell
 conda create -n lmdeploy python=3.10
 conda activate lmdeploy
 ```
 For CUDA 12:
-```
+```shell
 pip install lmdeploy
 ```
 For CUDA 11+:
-```
+```shell
 export LMDEPLOY_VERSION=0.4.0
 export PYTHON_VERSION=310
 pip install https://github.com/InternLM/lmdeploy/releases/download/v${LMDEPLOY_VERSION}/lmdeploy-${LMDEPLOY_VERSION}+cu118-cp${PYTHON_VERSION}-cp${PYTHON_VERSION}-manylinux2014_x86_64.whl --extra-index-url https://download.pytorch.org/whl/cu118
 ```
 3. Launch a model service.
-```
+```shell
 # lmdeploy serve api_server path/to/your/model --server-port [port_number] --model-name [your_model_name]
 lmdeploy serve api_server ~/models/qwen1.5-7b-chat --server-port 12580 --model-name qwen1.5-7b-chat
 ```
 ### Deploy Tools
 1. Install [AgentLego](https://github.com/InternLM/agentlego).
-```
+```shell
 conda create -n agentlego python=3.11.9
 conda activate agentlego
 cd agentlego
@@ -140,12 +140,12 @@ mim install mmcv==2.1.0
 Open ```~/anaconda3/envs/agentlego/lib/python3.11/site-packages/transformers/modeling_utils.py```, then set ```_supports_sdpa = False``` to ```_supports_sdpa = True``` in line 1279.
 
 2. Deploy tools for GTA benchmark.
-```
+```shell
 agentlego-server start --port 16181 --extra ./benchmark.py  `cat benchmark_toollist.txt` --host 0.0.0.0
 ```
 ### Start Evaluation
 1. Install [OpenCompass](https://github.com/open-compass/opencompass).
-```
+```shell
 conda create --name opencompass python=3.10 pytorch torchvision pytorch-cuda -c nvidia -c pytorch -y
 conda activate opencompass
 cd agentlego
@@ -253,16 +253,16 @@ gta_bench_eval_cfg = dict(evaluator=dict(type=GTABenchEvaluator, mode='every'))
 ```
 
 3. Infer and evaluate with OpenCompass.
-```
+```shell
 # infer only
 python run.py configs/eval_gta_bench.py --max-num-workers 32 --debug --mode infer
 ```
-```
+```shell
 # evaluate only
 # srun -p llmit -q auto python run.py configs/eval_gta_bench.py --max-num-workers 32 --debug --reuse [time_stamp_of_prediction_file] --mode eval
 srun -p llmit -q auto python run.py configs/eval_gta_bench.py --max-num-workers 32 --debug --reuse 20240628_115514 --mode eval
 ```
-```
+```shell
 # infer and evaluate
 python run.py configs/eval_gta_bench.py -p llmit -q auto --max-num-workers 32 --debug
 ```
