@@ -159,7 +159,7 @@ The ip and port number of **openai_api_base** is the ip of your model service an
 
 The ip and port number of **tool_server** is the ip of your tool service and the port number you specified when using agentlego.
 
-```
+```python
 models = [
   dict(
         abbr='qwen1.5-7b-chat',
@@ -183,7 +183,7 @@ models = [
 ```
 
 If you infer and evaluate in **step-by-step** mode, you should comment out **tool_server** and enable **tool_meta** in ```configs/eval_gta_bench.py```, and set infer mode and eval mode to **every_with_gt** in ```configs/datasets/gta_bench.py```:
-```
+```python
 models = [
   dict(
         abbr='qwen1.5-7b-chat',
@@ -205,7 +205,7 @@ models = [
     ),
 ]
 ```
-```
+```python
 gta_bench_infer_cfg = dict(
     prompt_template=dict(
         type=PromptTemplate,
@@ -218,7 +218,7 @@ gta_bench_eval_cfg = dict(evaluator=dict(type=GTABenchEvaluator, mode='every_wit
 ```
 
 If you infer and evaluate in **end-to-end** mode, you should comment out **tool_meta** and enable **tool_server** in ```configs/eval_gta_bench.py```, and set infer mode and eval mode to **every** in ```configs/datasets/gta_bench.py```:
-```
+```python
 models = [
   dict(
         abbr='qwen1.5-7b-chat',
@@ -240,7 +240,7 @@ models = [
     ),
 ]
 ```
-```
+```python
 gta_bench_infer_cfg = dict(
     prompt_template=dict(
         type=PromptTemplate,
