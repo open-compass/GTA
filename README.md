@@ -4,7 +4,7 @@
 
 [⬇️ [Dataset](https://github.com/open-compass/GTA/releases/download/v0.1.0/gta_dataset.zip)]
 [📃 [Paper](https://xxx)]
-[🌐 [Project Page](https://xxx)]
+[🌐 [Project Page](https://open-compass.github.io/GTA/)]
 [🤗 [Hugging Face](https://huggingface.co/datasets/Jize1/GTA)]
 </div>
 
@@ -271,7 +271,7 @@ python run.py configs/eval_gta_bench.py -p llmit -q auto --max-num-workers 32 --
 # 📝 Citation
 If you use GTA in your research, please cite the following paper:
 ```
-@misc{xxx,
+@article{xxx,
       title={GTA: A Benchmark for General Tool Agents}, 
       author={xxx},
       year={2024},
