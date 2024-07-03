@@ -1,0 +1,17 @@
+Model,InstAcc,ToolAcc,ArgAcc,SummAcc,P_F1,O_F1,L_F1,C_F1,AnsAcc,link,opensourced
+gpt-4-1106-preview,85.19,61.4,37.88,75,67.61,64.61,74.73,89.55,46.59,https://openai.com/research/gpt-4,FALSE
+gpt-4o,86.42,70.38,35.19,72.77,75.56,80,78.75,82.35,41.52,https://openai.com/research/gpt-4,FALSE
+gpt-3.5-turbo,67.63,42.91,20.83,60.24,58.99,62.5,59.85,97.3,23.62,https://openai.com/index/gpt-3-5-turbo-fine-tuning-and-api-updates/,FALSE
+claude3-opus,64.75,54.4,17.59,73.81,41.69,63.23,46.41,42.1,23.44,https://docs.anthropic.com/claude/docs/models-overview,FALSE
+mistral-large,58.98,38.42,11.13,68.03,19.17,30.05,26.85,38.89,17.06,https://mistral.ai/technology/#models,FALSE
+qwen1.5-72b-chat,48.83,24.96,7.9,68.7,12.41,11.76,21.16,5.13,13.32,https://github.com/QwenLM/Qwen,TRUE
+qwen1.5-14b-chat,42.25,18.85,6.28,60.06,19.93,23.4,39.83,25.45,12.42,https://github.com/QwenLM/Qwen,TRUE
+qwen1.5-7b-chat,29.77,7.36,0.18,49.38,0,13.95,16.22,36,10.56,https://github.com/QwenLM/Qwen,TRUE
+mixtral-8x7b-instruct,28.67,12.03,0.36,54.21,2.19,34.69,37.68,42.55,9.77,https://mistral.ai/technology/#models,TRUE
+deepseek-llm-67b-chat,9.05,23.34,0.18,11.51,14.72,23.19,22.22,27.42,9.51,https://github.com/deepseek-ai/DeepSeek-LLM,TRUE
+llama3-70b-instruct,47.6,36.8,4.31,69.06,32.37,22.37,36.48,31.86,8.32,https://github.com/facebookresearch/llama,TRUE
+mistral-7b-instruct,26.75,10.05,0,51.06,13.75,33.66,35.58,31.11,7.37,https://mistral.ai/technology/#models,TRUE
+deepseek-llm-7b-chat,10.56,16.16,0.18,18.27,20.81,15.22,31.3,37.29,4,https://github.com/deepseek-ai/DeepSeek-LLM,TRUE
+yi-34b-chat,23.23,10.77,0,34.99,11.6,11.76,12.97,5.13,3.21,https://github.com/01-ai/Yi,TRUE
+llama3-8b-instruct,45.95,11.31,0,36.88,19.07,23.23,29.83,42.86,3.1,https://github.com/facebookresearch/llama,TRUE
+yi-6b-chat,21.26,14.72,0,32.54,1.47,0,1.18,0,0.58,https://github.com/01-ai/Yi,TRUE

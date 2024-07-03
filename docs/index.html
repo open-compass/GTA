@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <!-- Meta tags for social media banners, these should be filled in appropriatly as they are your "business card" -->
+  <!-- Replace the content tag with appropriate information -->
+  <meta name="description" content="DESCRIPTION META TAG">
+  <meta property="og:title" content="SOCIAL MEDIA TITLE TAG"/>
+  <meta property="og:description" content="SOCIAL MEDIA DESCRIPTION TAG TAG"/>
+  <meta property="og:url" content="URL OF THE WEBSITE"/>
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X630-->
+  <meta property="og:image" content="static/image/your_banner_image.png" />
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+
+
+  <meta name="twitter:title" content="TWITTER BANNER TITLE META TAG">
+  <meta name="twitter:description" content="TWITTER BANNER DESCRIPTION META TAG">
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X600-->
+  <meta name="twitter:image" content="static/images/your_twitter_banner_image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- Keywords for your paper to be indexed by-->
+  <meta name="keywords" content="KEYWORDS SHOULD BE PLACED HERE">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+  <title>GTA: A Benchmark for General Tool Agents</title>
+  <link rel="icon" type="image/x-icon" href="static/images/robot.ico">
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+  rel="stylesheet">
+
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://documentcloud.adobe.com/view-sdk/main.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script src="static/js/bulma-carousel.min.js"></script>
+  <script src="static/js/bulma-slider.min.js"></script>
+  <script src="static/js/index.js"></script>
+  <!-- add for leaderboard -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.3.3/dist/echarts.min.js"></script>
+  <style>
+  .bold-black {
+    color: rgb(48, 48, 48);
+    font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title">GTA: A Benchmark for General Tool Agents</h1>
+            <div class="is-size-5 publication-authors">
+              <!-- Paper authors -->
+              <p>
+              <span class="author-block">
+                <a href="https://openreview.net/profile?id=~Jize_Wang1" target="_blank">Jize Wang</a><sup>1,2</sup>,</span>
+                <span class="author-block">
+                  <a href="https://github.com/mzr1996" target="_blank">Zerun Ma</a><sup>2</sup>,</span>
+                  <span class="author-block">
+                    <a href="https://scholar.google.com.hk/citations?user=y_cp1sUAAAAJ&hl=en" target="_blank">Yining Li</a><sup>2</sup>,</span>
+                    <span class="author-block">
+                      <a href="https://www.zhangsongyang.com/" target="_blank">Songyang Zhang</a><sup>2</sup>,</span>
+                      <!-- <br> -->
+                      <span class="author-block">
+                        <a href="https://scholar.google.com/citations?user=NGQrfUwAAAAJ&hl=zh-CN" target="_blank">Cailian Chen</a><sup>1</sup>,</span>
+                        <span class="author-block">
+                          <a href="https://chenkai.site/" target="_blank">Kai Chen</a><sup>2*</sup>,</span>
+                  <span class="author-block">
+                    <a href="https://scholar.google.com/citations?user=MGZyMf4AAAAJ&hl=en" target="_blank">Xinyi Le</a><sup>1*</sup>
+                  </span>
+                  </div>
+                </p>
+                  <div class="is-size-5 publication-authors">
+                    <span class="author-block"><sup>1</sup> Shanghai Jiao Tong University, <sup>2</sup> Shanghai AI Laboratory</span>
+                    <span class="eql-cntrb"><br><sup>*</sup>Corresponding Authors</span>
+                  </div>
+
+                  <div class="column has-text-centered">
+                    <div class="publication-links">
+
+                      <!-- ArXiv abstract Link -->
+                <span class="link-block">
+                  <a href="https://arxiv.org/abs/<ARXIV PAPER ID>" target="_blank"
+                  class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+
+                  <!-- Github link -->
+              <span class="link-block">
+                  <a href="https://github.com/open-compass/GTA" target="_blank"
+                  class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                </a>
+              </span>
+
+              <span class="link-block">
+                <a href="https://huggingface.co/datasets/Jize1/GTA" target="_blank"
+                  class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fas fa-laugh-squint"></i>
+                  </span>
+                  <span>Hugging Face</span>
+                </a>
+              </span>
+
+              <span class="link-block">
+                <a href="https://github.com/open-compass/GTA/releases/download/v0.1.0/gta_dataset.zip" target="_blank"
+                class="external-link button is-normal is-rounded is-dark">
+                <span class="icon">
+                  <i class="fas fa-cloud-download-alt"></i>
+                </span>
+                <span>Dataset</span>
+              </a>
+            </span>
+                
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Teaser video-->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <figure>
+        <a>
+            <img width="100%" src="static/images/dataset.jpg"> 
+        </a>
+        <p class="caption">
+          Some samples in the GTA benchmark. The user queries are human-designed, step-implicit, and settled in real-world scenarios. Multimodal context inputs are provided. Solving these queries is helpful for users, and complex for a LLM-based tool agent. The agent needs to use a combination of executable tools in perception, operation, logic, and creativity categories.
+        </p>
+    </figure>
+      <!-- <video poster="" id="tree" autoplay controls muted loop height="100%">
+        <source src="static/videos/banner_video.mp4"
+        type="video/mp4">
+      </video>
+      <h2 class="subtitle has-text-centered">
+        Aliquam vitae elit ullamcorper tellus egestas pellentesque. Ut lacus tellus, maximus vel lectus at, placerat pretium mi. Maecenas dignissim tincidunt vestibulum. Sed consequat hendrerit nisl ut maximus. 
+      </h2> -->
+    </div>
+  </div>
+</section>
+<!-- End teaser video -->
+
+<!-- Paper abstract -->
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            In developing general-purpose agents, significant focus has been placed on integrating large language models (LLMs) with various tools. This poses a challenge to the tool-use capabilities of LLMs. However, there are evident gaps between existing tool evaluations and real-world scenarios. Current evaluations often use AI-generated queries, single-step tasks, dummy tools, and text-only inputs, which fail to reveal the agents' real-world problem-solving abilities effectively. To address this, we propose GTA, a benchmark for <b><u>G</u></b>eneral <b><u>T</u></b>ool <b><u>A</u></b>gents, featuring three main aspects: (i) <b><em>Real user queries</em></b> : human-written queries with simple real-world objectives but implicit tool-use, requiring the LLM to reason the suitable tools and plan the solution steps. (ii) <b><em>Real deployed tools</em></b> : an evaluation platform equipped with tools across perception, operation, logic, and creativity categories to evaluate the agents' actual task execution performance. (iii) <b><em>Real multimodal inputs</em></b> : authentic image files, such as spatial scenes, web page screenshots, tables, code snippets, and printed/handwritten materials, used as the query contexts to align with real-world scenarios closely. We design 229 real-world tasks and executable tool chains to evaluate mainstream LLMs. Our findings show that real-world user queries are challenging for existing LLMs, with GPT-4 completing less than 50% of the tasks and most LLMs achieving below 25%. This evaluation reveals the bottlenecks in the tool-use capabilities of current LLMs in real-world scenarios, which provides future direction for the advancement of general-purpose tool agents.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- End paper abstract -->
+
+<!-- Video carousel -->
+<section class="hero is-small">
+  <div class="hero-body">
+    <div class="container" style="width: 70%; margin: 0 auto;">
+      <h2 class="title is-3">GTA Design </h2>
+      <div class="content has-text-justified">
+        <p style="text-align: left;">
+          GTA is a benchmark to evaluate the tool-use capability of LLM-based agents in real-world scenarios. It features three main aspects:
+          <ul>
+          <li><b>Real user queries.</b> The benchmark contains 229 human-written queries with simple real-world objectives but implicit tool-use, requiring the LLM to reason the suitable tools and plan the solution steps. </li>
+          <li><b>Real deployed tools.</b> GTA provides an evaluation platform equipped with tools across perception, operation, logic, and creativity categories to evaluate the agents' actual task execution performance. </li>
+          <li><b>Real multimodal inputs.</b> Each query is attached with authentic image files, such as spatial scenes, web page screenshots, tables, code snippets, and printed/handwritten materials, used as the query contexts to align with real-world scenarios closely. </li>
+          </ul>
+
+          The questions in GTA are all created by human. The comparison of GTA queries with AI-generated queries is shown in the table. The steps and tool types for queries in ToolBench and m&m's are explicitly stated, as marked in red and blue. The queries in APIBench are simple, only containing one step. Our GTA's queries are both <b>step-implicit</b> and <b>tool-implicit</b>, while based on <b>real-world scenarios</b>.
+        </p>
+        <figure>
+          <a>
+              <img width="90%" style="text-align: left;" src="static/images/implicit.jpg"> 
+          </a>
+        </figure>
+    </div>
+</div>
+    </div>
+  </div>
+</section>
+
+<!-- Image carousel -->
+<section class="hero is-small" style="width: 70%; margin: 0 auto;">  <div class="hero-body">
+    <div class="container">
+      <h2 class="title is-3">Question Examples</h2>
+      <!-- <h2 class="title is-3" style="text-align: center;">Question Examples</h2> -->
+      <p>
+        Here are some question examples of GTA. All questions are tool-implicit, step-implicit and contains multimodal context inputs. They are easy-to-understand questions with clear goals, based on real-world scenarios, helpful for humans while complex for AI assistants to solve. The JSON format data example is available at <a href="https://huggingface.co/datasets/Jize1/GTA">Hugging Face</a>.
+      </p>
+      <div style="width: 70%; margin: 0 auto;">
+        <div id="results-carousel" class="carousel results-carousel">
+          <div class="item">
+            <!-- Your image here -->
+            <img src="static/images/egg.jpg" alt="MY ALT TEXT"/>
+            <!-- <h2 class="subtitle has-text-centered">
+              First image description.
+            </h2> -->
+          </div>
+          <div class="item">
+            <!-- Your image here -->
+            <img src="static/images/map.jpg" alt="MY ALT TEXT"/>
+          </div>
+          <div class="item">
+            <!-- Your image here -->
+            <img src="static/images/bill.jpg" alt="MY ALT TEXT"/>
+          </div>
+          <div class="item">
+            <!-- Your image here -->
+            <img src="static/images/orange.jpg" alt="MY ALT TEXT"/>
+          </div>
+          <div class="item">
+            <!-- Your image here -->
+            <img src="static/images/panel.jpg" alt="MY ALT TEXT"/>
+          </div>
+          <div class="item">
+            <!-- Your image here -->
+            <img src="static/images/menu.jpg" alt="MY ALT TEXT"/>
+          </div>
+          <div class="item">
+            <!-- Your image here -->
+            <img src="static/images/plot.jpg" alt="MY ALT TEXT"/>
+          </div>
+          <div class="item">
+            <!-- Your image here -->
+            <img src="static/images/ingredient.jpg" alt="MY ALT TEXT"/>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- End image carousel -->
+
+<section class="hero is-small">
+  <div class="hero-body">
+    <div class="container" style="width: 70%; margin: 0 auto;">
+      <h2 class="title is-3">Dataset Construction </h2>
+    <div class="content has-text-justified">
+      <p>
+        Two steps are performed in the dataset construction pipeline. 
+        <ul>
+<li> <b>Query construction.</b> Initial exemplars and instruction documents are designed by experts and given to human annotators. Annotators brainstorm and design more samples based on the exemplars.  </li>
+
+<li> <b>Tool chain construction.</b> Annotators manually call the deployed tools to check the executability of each query in the query set. Then they annotate the ground truth tool chains for each query. </li>
+</ul>
+      </p>
+    </div>
+    <figure>
+      <a>
+        <div style="text-align: center;">
+          <img width="90%" src="static/images/construct.jpg"> 
+        </div>
+          
+      </a>
+  </figure>
+    </div>
+  </div>
+</section>
+
+
+<!-- <section class="hero is-small is-light">
+  <div class="hero-body">
+    <div class="container">
+      <h2 class="title is-3">Video Presentation</h2>
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          
+          <div class="publication-video">
+            <iframe src="https://www.youtube.com/embed/JkaxUblCGz0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section> -->
+
+
+<!-- javascript code begins-->
+<section class="hero is-small">
+  <div class="hero-body">
+    <div class="container" style="width: 70%; margin: 0 auto;">
+      <h2 class="title is-3">🏆 GTA Leaderboard </h2>
+      <br>
+      <div class="content has-text-justified">
+        <div id="chart" style="width:100%;height:600px;"></div>
+        <br>
+        <br>
+        <table id="origin" class="table"></table>
+        <h4>Notes</h4>
+        <p class="inline-block mt-3">
+          <ol>
+            <li>Models labeled with 🔶 are API-based models, while others are open-source models. </li>
+            <li>Refer to <a href="https://github.com/open-compass/GTA">Github</a> to evaluate models on GTA. </li>
+          </ol>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<script>
+  const originTable = document.getElementById('origin');
+  const chartDom = document.getElementById('chart');
+  
+  var myChart = echarts.init(chartDom);
+
+  var option = {
+    legend: {
+      data: ['AnsAcc*']
+    },
+    grid: {
+      left: '1%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      name: 'Size',
+      type: 'category',
+      boundaryGap: false,
+      data: [],
+      axisLabel: {
+        formatter: function(value) {
+          return value + 'B';
+        }
+      }
+    },
+    yAxis: {
+      name: 'AnsAcc',
+      type: 'value',
+      show: true,
+      nameTextStyle: {
+        align: 'left',
+      },
+      splitLine: {
+        show: true,
+        lineStyle: {
+          type: 'dashed'
+        }
+      }
+    },
+    legend: {
+      data: ['Open-source', 'API-based'],
+      itemStyle: {
+        opacity: 1.0
+      },
+    },
+    tooltip: {
+      trigger: 'item',
+      axisPointer: {
+        type: 'cross'
+      }
+    },
+    series: [{
+        name: 'Open-source',
+        type: 'scatter',
+        data: [],
+        itemStyle: {
+          color: '#91cc75',
+          opacity: 0.2
+        },
+        emphasis: {
+          focus: 'series'
+        },
+        lineStyle: {
+          width: 2
+        },
+        markLine: {
+          symbol: 'none',
+          emphasis: {
+            label: {
+              position: 'middle',
+              formatter: function(params) {
+                return params.data.name;
+              }
+            },
+          },
+          data: []
+        }
+      },
+      {
+        name: 'API-based',
+        type: 'scatter',
+        data: [],
+        itemStyle: {
+          color: '#5470c6',
+          opacity: 0.2
+        },
+        emphasis: {
+          focus: 'series'
+        },
+        lineStyle: {
+          width: 2
+        },
+        markLine: {
+          symbol: 'none',
+          emphasis: {
+            label: {
+              position: 'middle',
+              formatter: function(params) {
+                return params.data.name;
+              }
+            },
+          },
+          data: []
+        }
+      }
+    ]
+  };
+  
+  const theaders = [
+    'Model',
+    'InstAcc',
+    'ToolAcc',
+    'ArgAcc',
+    'SummAcc',
+    'P_F1',
+    'O_F1',
+    'L_F1',
+    'C_F1',
+    'AnsAcc'
+  ]
+
+  var data = [];
+
+  var currentUrl = 'static/csv/gta.csv';
+  
+
+  updateTable(originTable, currentUrl, 'AnsAcc');
+  updateChart(currentUrl);
+
+  function clearTable() {
+    originTable.innerHTML = '';
+  }
+
+  function clearChart() {
+    option.xAxis.data = [];
+    option.series[0].data = [];
+    option.series[1].data = [];
+    option.series[0].markLine.data = [];
+    option.series[1].markLine.data = [];
+  }
+
+  function updateTable(table, url, sortColumn) {
+    clearTable();
+    Papa.parse(url, {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: function (results) {
+        results.data.sort(function (a, b) {
+          return parseFloat(b[sortColumn]) - parseFloat(a[sortColumn]);
+        });
+        displayTable(table, results.data, sortColumn);
+      }
+    });
+  }
+
+  function updateChart(url) {
+    clearChart();
+    Papa.parse(url, {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: function (results) {
+        for(var i = 0; i < results.data.length; i++){
+          var sizeMatch = results.data[i]['Model'].match(/\d+(\.\d+)?b/g);
+          sizeMatch = sizeMatch ? Math.round(parseFloat(sizeMatch[0].replace('B', ''))).toString() : 'N/A';
+          results.data[i]['Size'] = sizeMatch ;
+        }
+        results.data.sort(function (a, b) {
+          if (parseFloat(a['Size']) - parseFloat(b['Size']) < 0) return -1;
+          if (parseFloat(a['Size']) - parseFloat(b['Size']) > 0) return 1;
+          return a['AnsAcc'] - b['AnsAcc']
+        });
+        displayChart(results.data, url);
+      }
+    });
+  }
+
+  function displayTable(table, data, displayColumn){
+    var thead = document.createElement('thead');
+    var headerRow = document.createElement('tr');
+    // add rank
+    var th = document.createElement('th');
+    th.textContent = '#';
+    headerRow.appendChild(th);
+    // headers
+    theaders.forEach(function (header) {
+      var th = document.createElement('th');
+      th.textContent = header;
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    // add rank
+    var rank = 1;
+    data.forEach(function (row) {
+      var dataRow = document.createElement('tr');
+      var rankCell = document.createElement('td');
+      rankCell.textContent = rank;
+      dataRow.appendChild(rankCell);
+      var modelCell = document.createElement('td');
+      if (rank == 1) {
+        modelCell.textContent = '🥇 ';
+      } else if (rank == 2) {
+        modelCell.textContent = '🥈 ';
+      } else if (rank == 3) {
+        modelCell.textContent = '🥉 ';
+      } else {
+        modelCell.textContent = '';
+      }
+      rank++;
+      var modelLink = document.createElement('a');
+      modelLink.href = row['link'];
+      modelLink.textContent = row['Model'];
+      modelLink.classList.add('link-underline-primary');
+      modelLink.classList.add('text-nowrap');
+      modelCell.appendChild(modelLink);
+      modelCell.classList.add('d-flex');
+      modelCell.classList.add('flex-nowrap');
+      var opensourced = row['opensourced'];
+      if (opensourced == 'FALSE') {
+        var promptedSymbol = document.createElement('span');
+        promptedSymbol.textContent = ' 🔶';
+        modelCell.appendChild(promptedSymbol);
+      }
+      dataRow.appendChild(modelCell);
+      var instructCell = document.createElement('td');
+      instructCell.textContent = row['InstAcc'];
+      dataRow.appendChild(instructCell);
+      var instructCell = document.createElement('td');
+      instructCell.textContent = row['ToolAcc'];
+      dataRow.appendChild(instructCell);
+      var instructCell = document.createElement('td');
+      instructCell.textContent = row['ArgAcc'];
+      dataRow.appendChild(instructCell);
+      var instructCell = document.createElement('td');
+      instructCell.textContent = row['SummAcc'];
+      dataRow.appendChild(instructCell);
+      var instructCell = document.createElement('td');
+      instructCell.textContent = row['P_F1'];
+      dataRow.appendChild(instructCell);
+      var instructCell = document.createElement('td');
+      instructCell.textContent = row['O_F1'];
+      dataRow.appendChild(instructCell);
+      var instructCell = document.createElement('td');
+      instructCell.textContent = row['L_F1'];
+      dataRow.appendChild(instructCell);
+      var instructCell = document.createElement('td');
+      instructCell.textContent = row['C_F1'];
+      dataRow.appendChild(instructCell);
+      var passCell = document.createElement('td');
+      passCell.classList.add('bold-black');
+      passCell.textContent += row[displayColumn];
+      dataRow.appendChild(passCell);
+      tbody.appendChild(dataRow);
+    });
+    table.appendChild(tbody);
+  }
+
+  function displayChart(data, url) {
+    var sizeSet = new Set();
+    sizeSet.add(0);
+    data.forEach(function(row) {
+      if (row['Size'] != 'N/A') {
+        sizeSet.add(row['Size']);
+      }
+    });
+    sizeSet.add(100);
+    sizeSet.forEach(function(size) {
+      option.xAxis.data.push(size);
+    });
+
+    var maxScore = 0.0;
+    data.forEach(function(row) {
+      if (parseFloat(row['AnsAcc']) > maxScore) {
+        maxScore = parseFloat(row['AnsAcc']);
+      }
+    });
+    option.yAxis.max = maxScore + 1;
+
+    data.forEach(function(row) {
+      if (row['Size'] == 'N/A') {
+        if (row['opensourced'] == 'FALSE') {
+          option.series[1].markLine.data.push({
+            name: row['Model'],
+            yAxis: row['AnsAcc']
+          });
+        } else {
+          option.series[0].markLine.data.push({
+            name: row['Model'],
+            yAxis: row['AnsAcc']
+          });
+        }
+      } else {
+        if (row['opensourced'] == 'FALSE') {
+          option.series[1].data.push({
+            name: row['Model'],
+            value: [row['Size'], row['AnsAcc']],
+            size: row['Size'],
+          });
+        } else {
+          option.series[0].data.push({
+            name: row['Model'],
+            value: [row['Size'], row['AnsAcc']],
+            size: row['Size'],
+          });
+        }
+      }
+    });
+
+    // select the highest model of each size
+    sizeSet.forEach(function(size) {
+      var maxScore = 0.0;
+      var maxScoreIns = 0.0;
+      var maxModel, maxModelIns, align;
+
+      data.forEach(function(row) {
+        if (row['Size'] == size) {
+          if(row['opensourced'] == 'FALSE') {
+            if (parseFloat(row['AnsAcc']) > maxScoreIns) {
+              maxScoreIns = parseFloat(row['AnsAcc']);
+              maxModelIns = row['Model'];
+            }
+          } else {
+            if (parseFloat(row['AnsAcc']) > maxScore) {
+              maxScore = parseFloat(row['AnsAcc']);
+              maxModel = row['Model'];
+            }
+          }
+        }
+      });
+      var count = 0;
+      option.series[0].data.forEach(function(row) {
+        if (row['size'] == size) {
+          count += 1;
+          if (count % 2 == 1){
+            offset = [40, 0];
+          } else {
+            offset = [-40, 0];
+          }
+          row.itemStyle = {
+            opacity: 1.0
+          };
+          row.label = {
+            show: true,
+            position: 'top',
+            offset: offset,
+            formatter: function(params) {
+              return params.data.name;
+            },
+            color: 'inherit'
+          };
+        }
+      });
+      option.series[1].data.forEach(function(row) {
+        if (true) {
+          row.itemStyle = {
+            opacity: 1.0
+          };
+          row.label = {
+            show: true,
+            position: 'top',
+            offset: offset,
+            formatter: function(params) {
+              return params.data.name;
+            },
+            color: 'inherit'
+          };
+        }
+      });
+    });
+    option.series[1].markLine.data.forEach(function(row){
+      row.label = {
+        show: true,
+        position: 'middle',
+        formatter: function(params) {
+          return params.data.name;
+        },
+        color: 'inherit'
+      };
+    });
+    option && myChart.setOption(option);
+  }
+
+</script> 
+
+
+<!-- javascript code end -->
+
+<!--BibTex citation -->
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code>@article{xxx,
+        title={GTA: A Benchmark for General Tool Agents}, 
+        author={xxx},
+        year={2024},
+        eprint={xxx},
+        archivePrefix={arXiv},
+        primaryClass={cs.CL}
+  }</code></pre>
+    </div>
+</section>
+<!--End BibTex citation -->
+
+  <footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+
+          <p>
+            This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a> which was adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+            You are free to borrow the of this website, we just ask that you link back to this page in the footer. <br> This website is licensed under a <a rel="license"  href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Statcounter tracking code -->
+  
+<!-- You can add a tracker to track page visits by creating an account at statcounter.com -->
+
+    <!-- End of Statcounter Code -->
+
+  </body>
+  </html>
