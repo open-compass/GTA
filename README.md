@@ -27,7 +27,7 @@ The comparison of GTA queries with AI-generated queries is shown in the table be
 
 ## 📣 What's New
 
-- **[2024.7.4]** Paper available on Arxiv. ✨✨✨
+- **[2024.7.4]** Paper available on arXiv. ✨✨✨
 - **[2024.7.3]** Release the evaluation and tool deployment code of GTA. 🔥🔥🔥
 - **[2024.7.1]** Release the GTA dataset on Hugging Face. 🎉🎉🎉
 
