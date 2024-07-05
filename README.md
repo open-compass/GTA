@@ -140,11 +140,16 @@ mim install mmcv==2.1.0
 Open ```~/anaconda3/envs/agentlego/lib/python3.11/site-packages/transformers/modeling_utils.py```, then set ```_supports_sdpa = False``` to ```_supports_sdpa = True``` in line 1279.
 
 2. Deploy tools for GTA benchmark.
+
+To use the GoogleSearch and MathOCR tools, you should first get the Serper API key from https://serper.dev, and the Mathpix API key from https://mathpix.com/. Then export these keys as environment variables.
+
 ```shell
 export SERPER_API_KEY='your_serper_key_for_google_search_tool'
 export MATHPIX_APP_ID='your_mathpix_key_for_mathocr_tool'
 export MATHPIX_APP_KEY='your_mathpix_key_for_mathocr_tool'
 ```
+
+Start the tool server.
 
 ```shell
 agentlego-server start --port 16181 --extra ./benchmark.py  `cat benchmark_toollist.txt` --host 0.0.0.0
