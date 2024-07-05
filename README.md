@@ -141,6 +141,12 @@ Open ```~/anaconda3/envs/agentlego/lib/python3.11/site-packages/transformers/mod
 
 2. Deploy tools for GTA benchmark.
 ```shell
+export SERPER_API_KEY='your_serper_key_for_google_search_tool'
+export MATHPIX_APP_ID='your_mathpix_key_for_mathocr_tool'
+export MATHPIX_APP_KEY='your_mathpix_key_for_mathocr_tool'
+```
+
+```shell
 agentlego-server start --port 16181 --extra ./benchmark.py  `cat benchmark_toollist.txt` --host 0.0.0.0
 ```
 ### Start Evaluation
