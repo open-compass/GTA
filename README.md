@@ -282,12 +282,13 @@ python run.py configs/eval_gta_bench.py -p llmit -q auto --max-num-workers 32 --
 # 📝 Citation
 If you use GTA in your research, please cite the following paper:
 ```bibtex
-@article{xxx,
+@misc{wang2024gtabenchmarkgeneraltool,
       title={GTA: A Benchmark for General Tool Agents}, 
-      author={xxx},
+      author={Jize Wang and Zerun Ma and Yining Li and Songyang Zhang and Cailian Chen and Kai Chen and Xinyi Le},
       year={2024},
-      eprint={xxx},
+      eprint={2407.08713},
       archivePrefix={arXiv},
-      primaryClass={cs.CL}
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2407.08713}, 
 }
 ```
