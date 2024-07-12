@@ -3,7 +3,7 @@
 <div align="center">
 
 [⬇️ [Dataset](https://github.com/open-compass/GTA/releases/download/v0.1.0/gta_dataset.zip)]
-[📃 [Paper](https://xxx)]
+[📃 [Paper](https://arxiv.org/abs/2407.08713)]
 [🌐 [Project Page](https://open-compass.github.io/GTA/)]
 [🤗 [Hugging Face](https://huggingface.co/datasets/Jize1/GTA)]
 </div>
@@ -27,7 +27,7 @@ The comparison of GTA queries with AI-generated queries is shown in the table be
 
 ## 📣 What's New
 
-- **[2024.7.4]** Paper available on arXiv. ✨✨✨
+- **[2024.7.11]** Paper available on arXiv. ✨✨✨
 - **[2024.7.3]** Release the evaluation and tool deployment code of GTA. 🔥🔥🔥
 - **[2024.7.1]** Release the GTA dataset on Hugging Face. 🎉🎉🎉
 
