@@ -44,7 +44,7 @@ The detailed information of 14 tools are shown in the table below.
  <img src="figs/tools.jpg" width="800"/>
 </div>
 
-## 🏆 Leader Board
+## 🏆 Leaderboard
 
 We evaluate the language models in two modes:
 - **Step-by-step mode.** It is designed to evaluate the model's fine-grained tool-use capabilities. In this mode, the model is provided with the initial $n$ steps of the reference tool chain as prompts, with the expectation to predict the action in step $n+1$. Four metrics are devised under step-by-step mode: ***InstAcc*** (instruction following accuracy), ***ToolAcc*** (tool selection accuracy), ***ArgAcc*** (argument prediction accuracy), and ***SummAcc*** (answer summarizing accuracy).
