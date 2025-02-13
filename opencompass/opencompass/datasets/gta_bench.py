@@ -198,21 +198,50 @@ class GTABenchEvaluator(BaseEvaluator):
             recall = {'perception': 0, 'operation': 0, 'logic': 0, 'creativity': 0}
             f1 = {'perception': 0, 'operation': 0, 'logic': 0, 'creativity': 0}
             metrics = {
-                'answer_acc': 0, 'tool_call': 0, 'tool_call_error': 0,
+                'answer_acc': 0, 'answer_acc_w_imggen': 0, 'tool_call': 0, 'tool_call_error': 0,
                 'perception': 0, 'operation': 0, 'logic': 0, 'creativity': 0
             }
-
+            imagegen_tools = ['DrawBox', 'AddText', 'Plot', 'TextToImage', 'ImageStylization']
             for preds, gts, ref in zip(predictions, gold, references):
+                # breakpoint()
                 ref = json.loads(ref)
                 total['all'] += 1
                 if ref:
                     total['answer'] += 1
                 pred_type, pred_answer = self.get_response_type(preds[0][-1])
-                if pred_type == 'answer' and pred_answer and ref:
+                if ref and pred_type == 'answer' and pred_answer:
                     if isinstance(ref, dict) and pred_answer:
-                        metrics['answer_acc'] += self.iscorrect(pred_answer, ref)
+                        score = self.iscorrect(pred_answer, ref)
+                        metrics['answer_acc'] += score
+                        metrics['answer_acc_w_imggen'] += score
                     elif isinstance(ref, list) and pred_answer:
-                        metrics['answer_acc'] += self.simscore(pred_answer, ref)
+                        score = self.simscore(pred_answer, ref)
+                        metrics['answer_acc'] += score
+                        metrics['answer_acc_w_imggen'] += score
+                # add imagegen to ansacc
+                if not ref:
+                    pred_imagegen = dict()
+                    score = 1
+                    for pred in preds[0]:
+                        if 'tool_calls' in pred and 'error' not in pred:
+                            tool_name = pred['tool_calls'][0]['function']['name']
+                            tool_arg = pred['tool_calls'][0]['function']['arguments']
+                            if tool_name in imagegen_tools:
+                                pred_imagegen[tool_name] = tool_arg
+                    for gt in gts[0]:
+                        if 'tool_calls' in gt:
+                            tool_name = gt['tool_calls'][0]['function']['name']
+                            tool_arg = gt['tool_calls'][0]['function']['arguments']
+                            if tool_name in imagegen_tools:
+                                if tool_name not in pred_imagegen:
+                                    score = 0
+                                    break
+                                else:
+                                    score = score * self.bert_score(json.dumps(tool_arg), 
+                                                        json.dumps(pred_imagegen[tool_name]))
+                    metrics['answer_acc_w_imggen'] += score
+              
+
                 for pred in preds[0]:
                     if 'tool_calls' in pred:
                         metrics['tool_call'] += 1
@@ -238,12 +267,15 @@ class GTABenchEvaluator(BaseEvaluator):
                 f1[tool_type] = 2 * precision[tool_type] * recall[tool_type] / (precision[tool_type] + recall[tool_type] + 1e-5)
             return dict(
                 answer_acc=metrics['answer_acc'] / total['answer'] * 100,
+                answer_acc_w_imggen=metrics['answer_acc_w_imggen'] / total['all'] * 100,
                 tool_call=metrics['tool_call'],
                 tool_call_error=metrics['tool_call_error'],
                 p_f1 = f1['perception'] * 100,
                 o_f1 = f1['operation'] * 100,
                 l_f1 = f1['logic'] * 100,
-                c_f1 = f1['creativity'] * 100
+                c_f1 = f1['creativity'] * 100,
+                total_ansacc=metrics['answer_acc'],
+                total_ansacc_wimggen=metrics['answer_acc_w_imggen']
             )
         else:
             raise NotImplementedError
