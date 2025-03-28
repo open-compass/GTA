@@ -28,7 +28,7 @@ The comparison of GTA queries with AI-generated queries is shown in the table be
 
 ## 📣 What's New
 
-- **[2025.3.25]** Add 🏆Leaderboard, Mar. 2025 at the end of README.
+- **[2025.3.25]** Update 🏆Leaderboard, Mar. 2025, including new models such as Deepseek-R1, Deepseek-V3, Qwen-QwQ, Qwen-2.5-max series.
 - **[2024.9.26]** GTA is accepted to NeurIPS 2024 Dataset and Benchmark Track! 🎉🎉🎉
 - **[2024.7.11]** Paper available on arXiv. ✨✨✨
 - **[2024.7.3]** Release the evaluation and tool deployment code of GTA. 🔥🔥🔥
@@ -138,6 +138,7 @@ cd agentlego
 pip install -r requirements_all.txt
 pip install agentlego
 pip install -e .
+mim install mmengine
 mim install mmcv==2.1.0
 ```
 Open ```~/anaconda3/envs/agentlego/lib/python3.11/site-packages/transformers/modeling_utils.py```, then set ```_supports_sdpa = False``` to ```_supports_sdpa = True``` in line 1279.
@@ -167,6 +168,8 @@ pip install -e .
 cd ../opencompass
 pip install -e .
 ```
+huggingface_hub==0.25.2 (<0.26.0)
+transformers==4.40.1
 2. Modify the config file at ```configs/eval_gta_bench.py``` as below.
 
 The ip and port number of **openai_api_base** is the ip of your model service and the port number you specified when using lmdeploy.
@@ -301,17 +304,16 @@ If you use GTA in your research, please cite the following paper:
 **Models** | **Inst** | **Tool** | **Arg** | **Summ** | **P** | **O** | **L** | **C** | **Ans** | **Ans+I**
 ---|---|---|---|---|---|---|---|---|---|---
 💛 ***API-based*** | | | | | | | | | |
-gpt-4o | <ins>**86.42**</ins> | <ins>**70.38**</ins> | <ins>**35.19**</ins> | 72.77 | <ins>**75.56**</ins> | <ins>**80**</ins> | <ins>**78.75**</ins> | 82.35 | 41.52 | 40.05
-claude3-opus |64.75 | 54.4 | 17.59 | <ins>**73.81**</ins> | 41.69 | 63.23 | 46.41 | 42.1 | 23.44 | 14.47
-mistral-large | 58.98 | 38.42 | 11.13 | 68.03 | 19.17 | 30.05 | 26.85 | 38.89 | 17.06 | 11.94
-qwen-max-2.5 | 83.54 | 58.35 | 29.62 | 72.87 | 69.86 | 76.92 | 74.55 | <ins>**89.55**</ins> | 41.73 | 45.91
 deepseek-v3 | 68.31 | 40.57 | 25.49 | 66.05 | 70.81 | 73.28 | 77.70 | 86.15 | <ins>**44.78**</ins> | <ins>**49.67**</ins>
+qwen-max-2.5 | 83.54 | 58.35 | 29.62 | 72.87 | 69.86 | 76.92 | 74.55 | <ins>**89.55**</ins> | 41.73 | 45.91
+gpt-4o | <ins>**86.42**</ins> | <ins>**70.38**</ins> | <ins>**35.19**</ins> | 72.77 | <ins>**75.56**</ins> | <ins>**80**</ins> | <ins>**78.75**</ins> | 82.35 | 41.52 | 40.05
 💚 ***Open-source*** | | | | | | | | | | |
+qwq-32b | 27.02 | 13.82 | 0 | 47.5 | <ins>59.12</ins> | <ins>54.7</ins> | 44.35 | 45.61 | <ins>27.31</ins> | <ins>22.36</ins>
+deepseek-r1-distill-llama-70b | 30.73 | 7.72 | 0.36 | 48.46 | 34.03 | 42.37 | 27.23 | 37.5 | 13.09 | 10.21
+deepseek-r1-distill-llama-8b | 27.3 | 14.72 | 0 | 52.6 | 22.29 | 38.78 | 23.59 | 39.13 | 11.10 | 9.45
 qwen2.5-7b-instruct | <ins>56.38</ins> | 32.85 | 5.57 | <ins>65.75</ins> | 20.67 | 29.17 | 20.83 | 45.83 | 9.06 | 8.95
 llama-3.1-8b-instruct | 41.15 | 24.24 | 1.08 | 64.71 | 36.32 | 43.69 | 47.3 | 21.59 | 8.78 | 8.08
 ministral-8b-instruct-2410 | 42.39 | 22.08 | 2.15 | 61.4 | 19.28 | 42.96 | <ins>49.59</ins> | <ins>58.06</ins> | 6.46 | 7.4
-deepseek-r1-distill-llama-8b | 27.3 | 14.72 | 0 | 52.6 | 22.29 | 38.78 | 23.59 | 39.13 | 11.10 | 9.45
-deepseek-r1-distill-llama-70b | 30.73 | 7.72 | 0.36 | 48.46 | 34.03 | 42.37 | 27.23 | 37.5 | 13.09 | 10.21
-qwq-32b | 27.02 | 13.82 | 0 | 47.5 | <ins>59.12</ins> | <ins>54.7</ins> | 44.35 | 45.61 | <ins>27.31</ins> | <ins>22.36</ins>
+mistral-large-instruct-2411 | 50.89 | <ins>40.75</ins> | <ins>15.44</ins> | 60.74 | 22.41 | 30.77 | 33.77 | 30.77 | 7.35 | 6.99
 llama-3.1-nemotron-70b-instruct-hf | 27.43 | 18.31 | 0 | 51.24 | 20.18 | 35.59 | 23.89 | 23.73 | 8.6 | 6.46
-mistral-large-instruct-2411 | 50.89 | <ins>40.75</ins> | <ins>15.44</ins> | 60.74 | / | / | / | / | / | /
+
