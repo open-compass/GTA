@@ -119,6 +119,10 @@ llama-3.1-70b-instruct | <ins>62.96</ins> | <ins>38.78</ins> | <ins>16.52</ins> 
 
 ## 🚀 Evaluate on GTA
 
+If you want to add a new agent wrapper or integrate a different LLM endpoint, see more details at:
+
+- [ADDING_NEW_AGENT_OR_LLM.md](docs/ADDING_NEW_AGENT_OR_LLM.md)
+
 ### Prepare GTA Dataset
 1. Clone this repo.
 ```shell
