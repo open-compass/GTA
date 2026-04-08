@@ -108,12 +108,36 @@ class RemoteTool(BaseTool):
     @staticmethod
     def _parse_output(out: Any, p: Parameter):
         if p.type is ImageIO:
+            if not isinstance(out, (str, bytes, bytearray)):
+                raise TypeError(
+                    'RemoteTool expected an ImageIO response encoded as base64 '
+                    f'(str/bytes), but got {type(out).__name__}. '
+                    'This usually means the remote endpoint is not an agentlego-server '
+                    'image endpoint, or the OpenAPI response schema does not match what '
+                    'the server actually returns.'
+                )
             file = BytesIO(base64.b64decode(out))
             out = ImageIO.from_file(file)
         elif p.type is AudioIO:
+            if not isinstance(out, (str, bytes, bytearray)):
+                raise TypeError(
+                    'RemoteTool expected an AudioIO response encoded as base64 '
+                    f'(str/bytes), but got {type(out).__name__}. '
+                    'This usually means the remote endpoint is not an agentlego-server '
+                    'audio endpoint, or the OpenAPI response schema does not match what '
+                    'the server actually returns.'
+                )
             file = BytesIO(base64.b64decode(out))
             out = AudioIO.from_file(file)
         elif p.type is File:
+            if not isinstance(out, (str, bytes, bytearray)):
+                raise TypeError(
+                    'RemoteTool expected a File response encoded as base64 '
+                    f'(str/bytes), but got {type(out).__name__}. '
+                    'This usually means the remote endpoint is not an agentlego-server '
+                    'file endpoint, or the OpenAPI response schema does not match what '
+                    'the server actually returns.'
+                )
             file = BytesIO(base64.b64decode(out))
             out = File.from_file(file, filetype=p.filetype)
         return out

@@ -263,10 +263,16 @@ class GTABenchEvaluator(BaseEvaluator):
                             metrics[tool_type] += 1
             for tool_type in f1.keys():
                 precision[tool_type] = metrics[tool_type] / (total_predict[tool_type] + 1e-5)
-                recall[tool_type] = metrics[tool_type] / total[tool_type]
-                f1[tool_type] = 2 * precision[tool_type] * recall[tool_type] / (precision[tool_type] + recall[tool_type] + 1e-5)
+                # Some subsets may contain 0 GT tool calls for a category.
+                # In that case, define recall/f1 as 0 to avoid crashing.
+                if total[tool_type] == 0:
+                    recall[tool_type] = 0
+                    f1[tool_type] = 0
+                else:
+                    recall[tool_type] = metrics[tool_type] / total[tool_type]
+                    f1[tool_type] = 2 * precision[tool_type] * recall[tool_type] / (precision[tool_type] + recall[tool_type] + 1e-5)
             return dict(
-                answer_acc=metrics['answer_acc'] / total['answer'] * 100,
+                answer_acc=(metrics['answer_acc'] / total['answer'] * 100) if total['answer'] else 0,
                 answer_acc_w_imggen=metrics['answer_acc_w_imggen'] / total['all'] * 100,
                 tool_call=metrics['tool_call'],
                 tool_call_error=metrics['tool_call_error'],

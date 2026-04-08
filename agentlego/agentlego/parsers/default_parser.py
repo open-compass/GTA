@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from agentlego.types import AudioIO, File, ImageIO, IOType
+from agentlego.types import AudioIO, File, ImageIO, IOType, VideoIO
 from .base_parser import BaseParser
 
 
@@ -8,6 +8,7 @@ class DefaultParser(BaseParser):
     agent_type2format = {
         ImageIO: 'path',
         AudioIO: 'path',
+        VideoIO: 'path',
         File: 'path',
     }
 

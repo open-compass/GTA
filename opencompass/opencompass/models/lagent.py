@@ -14,6 +14,54 @@ except ImportError:
     lagent = None
     agentlego = None
 
+
+def _patch_lagent_action_executor_split():
+    """Patch lagent ActionExecutor parsing to be resilient to tool names containing dots.
+
+    Upstream lagent parses toolkit calls like "<toolkit>.<api>" via `name.split('.')`,
+    which crashes when `<toolkit>` itself contains dots (e.g. "Solver.v2.solve").
+
+    Strategy:
+      1) If `name` matches an action name exactly, treat it as a normal action (api='run').
+      2) Otherwise, if it contains dots, split from the right once: `rsplit('.', 1)`.
+
+    This keeps backward compatibility while preventing `ValueError: too many values to unpack`.
+    """
+    if lagent is None:
+        return
+
+    try:
+        from lagent.actions.action_executor import ActionExecutor as _ActionExecutor
+        from lagent.schema import ActionValidCode
+    except Exception:
+        return
+
+    if getattr(_ActionExecutor, '_opencompass_safe_split_patched', False):
+        return
+
+    def _safe_call(self, name: str, command: str):
+        if name in getattr(self, 'actions', {}):
+            action_name, api_name = name, 'run'
+        elif '.' in name:
+            action_name, api_name = name.rsplit('.', 1)
+        else:
+            action_name, api_name = name, 'run'
+
+        if not self.is_valid(action_name):
+            if name == self.no_action.name:
+                action_return = self.no_action(command)
+            elif name == self.finish_action.name:
+                action_return = self.finish_action(command)
+            else:
+                action_return = self.invalid_action(command)
+        else:
+            action_return = self.actions[action_name](command, api_name)
+            action_return.valid = ActionValidCode.OPEN
+        return action_return
+
+    _ActionExecutor.__call__ = _safe_call
+    setattr(_ActionExecutor, '_opencompass_safe_split_patched', True)
+
 class DummyTool(agentlego.tools.BaseTool):
 
     def __init__(self, toolmeta):
@@ -99,6 +147,7 @@ class LagentAgent:
                  tool_meta=None,
                  protocol=None,
                  **kwargs):
+        _patch_lagent_action_executor_split()
         llm = model_adapter(REGISTRY.build(llm))
         agent_cfg = {'type': agent_type, 'llm': llm, **kwargs}
 
@@ -216,10 +265,33 @@ class LagentAgent:
                 memory.append(dict(role='user', content=prompt))
         memory.append(dict(role='user', content=query))
 
-        agent_return = self.agent.chat(memory)
+        try:
+            agent_return = self.agent.chat(memory)
+        except Exception as e:
+            # Keep evaluation running even if tool execution crashes.
+            steps = [
+                {
+                    'role': 'assistant',
+                    'content': f'[LagentAgentError] {type(e).__name__}: {e}',
+                    'error': {
+                        'type': type(e).__name__,
+                        'msg': str(e),
+                    },
+                    'meta': {'type': 'error'},
+                }
+            ]
+            return steps, memory
 
         steps = []
         for action in agent_return.actions:
+            # Insert model thought in order before each action/tool call
+            thought = getattr(action, 'thought', None)
+            if isinstance(thought, str) and thought.strip():
+                steps.append({
+                    'role': 'assistant',
+                    'content': thought,
+                    'meta': {'type': 'thought'}
+                })
             if action.type == action_executor.finish_action.name:
                 step = dict(role='assistant', content=action.format_result())
                 steps.append(step)

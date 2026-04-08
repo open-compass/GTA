@@ -17,6 +17,8 @@ class DrawBox(BaseTool):
                         Info('The bbox coordinate in the format of `(x1, y1, x2, y2)`')],
         annotation: Annotated[Optional[str],
                               Info('The extra annotation text of the bbox')] = None,
+        output_dir: Optional[str] = None,
+        filename: Optional[str] = None,
     ) -> ImageIO:
         image_pil = image.to_pil().copy().convert('RGBA')
         canvas = Image.new('RGBA', image_pil.size, (0, 0, 0, 0))
@@ -40,4 +42,14 @@ class DrawBox(BaseTool):
                 anchor='lb',
                 font=font,
             )
-        return ImageIO(Image.alpha_composite(image_pil, canvas).convert('RGB'))
+        result_img = Image.alpha_composite(image_pil, canvas).convert('RGB')
+        import os
+        if output_dir is not None:
+            os.makedirs(output_dir, exist_ok=True)
+            if filename is None:
+                filename = 'image_with_box.png'
+            output_path = os.path.join(output_dir, filename)
+            result_img.save(output_path)
+            return ImageIO(output_path)
+        else:
+            return ImageIO(result_img)

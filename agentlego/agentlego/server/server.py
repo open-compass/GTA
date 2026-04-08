@@ -1,6 +1,7 @@
 import base64
 import inspect
 import logging
+import os
 import sys
 from contextlib import asynccontextmanager
 from io import BytesIO
@@ -43,6 +44,9 @@ def create_input_params(tool: BaseTool) -> List[inspect.Parameter]:
         if p.type is ImageIO:
             field_kwargs['format'] = 'image;binary'
             annotation = Annotated[UploadFile, File(**field_kwargs)]
+        elif p.type.__name__ == 'VideoIO':
+            field_kwargs['format'] = 'video;binary'
+            annotation = Annotated[UploadFile, File(**field_kwargs)]
         elif p.type is AudioIO:
             field_kwargs['format'] = 'audio;binary'
             annotation = Annotated[UploadFile, File(**field_kwargs)]
@@ -74,6 +78,9 @@ def create_output_annotation(tool: BaseTool):
         if p.type is ImageIO:
             annotation = str
             field_kwargs['format'] = 'image/png;base64'
+        elif p.type.__name__ == 'VideoIO':
+            annotation = str
+            field_kwargs['format'] = 'video/mp4;base64'
         elif p.type is AudioIO:
             annotation = str
             field_kwargs['format'] = 'audio/wav;base64'
@@ -109,6 +116,9 @@ def add_tool(tool: BaseTool, app: FastAPI):
             if p.type is ImageIO:
                 from PIL import Image
                 data = ImageIO(Image.open(data.file))
+            elif p.type.__name__ == 'VideoIO':
+                # 直接读取二进制内容
+                data = __import__('agentlego.types', fromlist=['VideoIO']).VideoIO(data.file.read())
             elif p.type is AudioIO:
                 import torchaudio
                 file_format = data.filename.rpartition('.')[-1] or None
@@ -132,6 +142,9 @@ def add_tool(tool: BaseTool, app: FastAPI):
                 file = BytesIO()
                 out.to_pil().save(file, format='png')
                 out = base64.b64encode(file.getvalue()).decode()
+            elif p.type.__name__ == 'VideoIO':
+                file = BytesIO(out.to_bytes())
+                out = base64.b64encode(file.getvalue()).decode()
             elif p.type is AudioIO:
                 import torchaudio
                 file = BytesIO()
@@ -152,6 +165,15 @@ def add_tool(tool: BaseTool, app: FastAPI):
         try:
             return _call(**kwargs)
         except Exception as e:
+            # Treat execution timeouts as timeouts, not "Bad Request".
+            try:
+                from func_timeout.exceptions import FunctionTimedOut
+            except Exception:
+                FunctionTimedOut = None
+
+            if FunctionTimedOut is not None and isinstance(e, FunctionTimedOut):
+                raise HTTPException(status_code=408, detail=repr(e))
+
             raise HTTPException(status_code=400, detail=repr(e))
 
     app.add_api_route(
@@ -163,10 +185,73 @@ def add_tool(tool: BaseTool, app: FastAPI):
     )
 
 
+def _ensure_nltk_resources(logger: logging.Logger):
+    """Ensure common NLTK resources exist for tools that depend on them.
+
+    Some vision-language tools (e.g., GLIP-based) rely on NLTK tokenizers/taggers.
+    If these resources are missing, the tool endpoint will raise a LookupError
+    and be returned as a 400 Bad Request.
+    """
+
+    try:
+        import nltk
+        import nltk.data
+    except Exception:
+        return
+
+    # Pick a writable NLTK data dir and ensure it's on the search path.
+    nltk_data_dir = None
+    for p in getattr(nltk.data, 'path', []):
+        p = os.path.expanduser(str(p))
+        try:
+            os.makedirs(p, exist_ok=True)
+            test_file = os.path.join(p, '.write_test')
+            with open(test_file, 'w'):
+                pass
+            os.remove(test_file)
+            nltk_data_dir = p
+            break
+        except Exception:
+            continue
+
+    if nltk_data_dir is None:
+        nltk_data_dir = os.path.expanduser('~/.cache/agentlego/nltk_data')
+        os.makedirs(nltk_data_dir, exist_ok=True)
+        if nltk_data_dir not in nltk.data.path:
+            nltk.data.path.insert(0, nltk_data_dir)
+
+    resources = [
+        # Sentence/token word tokenizer
+        ('tokenizers/punkt', 'punkt'),
+        # POS tagger (legacy pickle)
+        ('taggers/averaged_perceptron_tagger/averaged_perceptron_tagger.pickle', 'averaged_perceptron_tagger'),
+        # Some environments have the newer *_eng package installed instead.
+        ('taggers/averaged_perceptron_tagger_eng', 'averaged_perceptron_tagger_eng'),
+    ]
+
+    for find_path, download_name in resources:
+        try:
+            nltk.data.find(find_path)
+            continue
+        except LookupError:
+            pass
+        except Exception as e:
+            logger.warning(f'NLTK resource check failed for {find_path}: {e!r}')
+            continue
+
+        try:
+            logger.info(f'Downloading NLTK resource {download_name} to {nltk_data_dir} ...')
+            nltk.download(download_name, download_dir=nltk_data_dir, quiet=True)
+        except Exception as e:
+            # Don't crash the server if downloads are unavailable; tool calls may fail later.
+            logger.warning(f'Failed to download NLTK resource {download_name}: {e!r}')
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger = logging.getLogger('uvicorn.error')
     logger.info(f'OpenAPI spec file at \x1b[1m{app.openapi_url}\x1b[0m')
+    _ensure_nltk_resources(logger)
     yield
 
 

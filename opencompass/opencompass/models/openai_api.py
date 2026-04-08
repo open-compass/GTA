@@ -151,14 +151,20 @@ class OpenAI(BaseAPIModel):
         """
         assert isinstance(input, (str, PromptList))
 
-        # max num token for gpt-3.5-turbo is 4097
-        context_window = 4096
+        # Context window selection.
+        # Default to user-provided max_seq_len, and fall back to heuristics for
+        # well-known OpenAI model name patterns.
+        context_window = self.max_seq_len or 4096
+        heuristic_window = 4096
         if '32k' in self.path:
-            context_window = 32768
+            heuristic_window = 32768
         elif '16k' in self.path:
-            context_window = 16384
+            heuristic_window = 16384
         elif 'gpt-4' in self.path:
-            context_window = 8192
+            heuristic_window = 8192
+        # Use the larger one so custom/OpenAI-compatible backends (e.g. Qwen)
+        # don't get incorrectly capped at 4k.
+        context_window = max(context_window, heuristic_window)
 
         # will leave 100 tokens as prompt buffer, triggered if input is str
         if isinstance(input, str) and self.mode != 'none':
@@ -241,7 +247,60 @@ class OpenAI(BaseAPIModel):
                 continue
             try:
                 response = response.get('data', response)
-                return response['choices'][0]['message']['content'].strip()
+                choice0 = response['choices'][0]
+                message = choice0.get('message') or {}
+                content = message.get('content')
+
+                if isinstance(content, str):
+                    return content.strip()
+
+                # Some OpenAI-compatible backends return `content=None` for
+                # tool calls or provide text in alternative fields.
+                if content is None:
+                    tool_calls = message.get('tool_calls')
+                    if isinstance(tool_calls, list) and tool_calls:
+                        tc0 = tool_calls[0]
+                        function = tc0.get('function') if isinstance(tc0,
+                                                                  dict) else None
+                        if isinstance(function, dict):
+                            name = function.get('name') or ''
+                            arguments = function.get('arguments')
+                            if isinstance(arguments, (dict, list)):
+                                arguments = json.dumps(arguments,
+                                                      ensure_ascii=False)
+                            elif arguments is None:
+                                arguments = ''
+                            else:
+                                arguments = str(arguments)
+                            return f'Tool: {name}\nTool Input: {arguments}'
+
+                    function_call = message.get('function_call')
+                    if isinstance(function_call, dict) and function_call:
+                        name = function_call.get('name') or ''
+                        arguments = function_call.get('arguments')
+                        if isinstance(arguments, (dict, list)):
+                            arguments = json.dumps(arguments,
+                                                  ensure_ascii=False)
+                        elif arguments is None:
+                            arguments = ''
+                        else:
+                            arguments = str(arguments)
+                        return f'Tool: {name}\nTool Input: {arguments}'
+
+                    for key in ('reasoning_content', 'reasoning', 'analysis',
+                                'text'):
+                        alt = message.get(key)
+                        if isinstance(alt, str) and alt.strip():
+                            return alt.strip()
+
+                    alt_text = choice0.get('text')
+                    if isinstance(alt_text, str) and alt_text.strip():
+                        return alt_text.strip()
+                    return ''
+
+                if isinstance(content, (dict, list)):
+                    return json.dumps(content, ensure_ascii=False).strip()
+                return str(content).strip()
             except KeyError:
                 if 'error' in response:
                     if response['error']['code'] == 'rate_limit_exceeded':
