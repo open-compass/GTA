@@ -27,6 +27,7 @@ GTA-2 is a hierarchical benchmark for General Tool Agents (GTA) spanning atomic 
 ## 📣 What's New
 
 - **[2026.4.12]** Release GTA-2 (GTA-Atomic + GTA-Workflow). 🔥🔥🔥
+- **[2026.2.14]** Update 🏆Leaderboard, Feb. 2026, including new models such as GPT-5, Gemini-2.5, Claude-4.5, Kimi-K2, Grok-4, Llama-4, Deepseek-V3.2, Qwen3-235B-A22B series.
 - **[2025.3.25]** Update 🏆Leaderboard, Mar. 2025, including new models such as Deepseek-R1, Deepseek-V3, Qwen-QwQ, Qwen-2.5-max series.
 - **[2024.9.26]** GTA is accepted to NeurIPS 2024 Dataset and Benchmark Track! 🎉🎉🎉
 - **[2024.7.11]** Paper available on arXiv. ✨✨✨
