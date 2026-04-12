@@ -86,7 +86,7 @@ yi-6b-chat | 21.26 | 14.72 | 0 | 32.54 | 1.47 | 0 | 1.18 | 0 | 0.58 | 0.44
 deepseek-v3 | 68.31 | 40.57 | 25.49 | 66.05 | 70.81 | 73.28 | 77.70 | 86.15 | <ins>**44.78**</ins> | <ins>**49.67**</ins>
 qwen-max-2.5 | 83.54 | 58.35 | 29.62 | 72.87 | 69.86 | 76.92 | 74.55 | <ins>**89.55**</ins> | 41.73 | 45.91
 gpt-4o | <ins>**86.42**</ins> | <ins>**70.38**</ins> | <ins>**35.19**</ins> | 72.77 | <ins>**75.56**</ins> | <ins>**80**</ins> | <ins>**78.75**</ins> | 82.35 | 41.52 | 40.05
-💚 ***Open-source*** | | | | | | | | | | |
+💚 ***Open-source*** | | | | | | | | | |
 qwq-32b | 27.02 | 13.82 | 0 | 47.5 | <ins>59.12</ins> | <ins>54.7</ins> | 44.35 | 45.61 | <ins>27.31</ins> | <ins>22.36</ins>
 deepseek-r1-distill-llama-70b | 30.73 | 7.72 | 0.36 | 48.46 | 34.03 | 42.37 | 27.23 | 37.5 | 13.09 | 10.21
 deepseek-r1-distill-llama-8b | 27.3 | 14.72 | 0 | 52.6 | 22.29 | 38.78 | 23.59 | 39.13 | 11.10 | 9.45
@@ -109,7 +109,7 @@ claude-sonnet-4.5 | 55.83 | 35.01 | 24.24 | 66.89 | 40.12 | 72.13 | 45.33 | 23.8
 kimi-k2 | 54.73 | 33.75 | 23.88 | <ins>**69.75**</ins> | 28.93 | 65.49 | 31.00 | 39.13 | 18.32 | 16.69
 llama-4-scout | 54.87 | 33.39 | 24.06 | 66.31 | 22.73 | 41.58 | 25.57 | 35.56 | 22.03 | 20.40
 grok-4 | 55.97 | <ins>**35.91**</ins> | 24.06 | 67.49 | 22.22 | 44.00 | 28.83 | 31.82 | 17.78 | 16.73
-💚 ***Open-source*** | | | | | | | | | | |
+💚 ***Open-source*** | | | | | | | | | |
 qwen3-8b | 39.51 | 26.21 | 15.08 | 56.06 | 56.62 | <ins>55.17</ins> | <ins>48.72</ins> | 44.71 | <ins>27.10</ins> | 26.97
 llama-3.2-3b-instruct | 38.41 | 25.49 | 15.80 | 56.27 | 56.62 | 51.97 | 46.87 | <ins>59.37</ins> | 24.99 | <ins>29.23</ins>
 llama-3.1-8b-instruct | 41.15 | 24.24 | 1.08 | 64.71 | 36.32 | 43.69 | 47.30 | 21.59 | 8.78 | 8.08
@@ -326,87 +326,6 @@ srun -p llmit -q auto python run.py configs/eval_gta_bench.py --max-num-workers 
 python run.py configs/eval_gta_bench.py -p llmit -q auto --max-num-workers 32 --debug
 ```
 
-## 🚀🚀 Evaluate on GTA-2
-
-**GTA-2 is compatible with the older version of GTA.**
-
-### Prepare GTA-2 Dataset
-
-### Deploy Tools
-1. Install [AgentLego] and required pkgs.
-
-Same as GTA except
-```shell
-pip install -r requirements_gta_v2.txt
-```
-
-2. Deploy tool server.
-```shell
-export SERPER_API_KEY='your_serper_key_for_google_search_tool'
-export MATHPIX_APP_ID='your_mathpix_key_for_mathocr_tool'
-export MATHPIX_APP_KEY='your_mathpix_key_for_mathocr_tool'
-```
-
-Start the server under ```GTA/agentlego```
-```shell
-agentlego-server start --port 16181 --extra ./benchmark.py  `cat benchmark_toollist_v2.txt` --host 0.0.0.0
-```
-
-### Start Evaluation
-
-1. Install [OpenCompass](https://github.com/open-compass/opencompass).
-```shell
-conda create --name opencompass python=3.10 pytorch torchvision pytorch-cuda -c nvidia -c pytorch -y
-conda activate opencompass
-cd agentlego
-pip install -e .
-cd ../opencompass
-pip install -e .
-pip install huggingface_hub==0.25.2 transformers==4.40.1
-```
-
-2. Config your agent or llm (default at ```GTA/opencompass/configs/eval_gta_bench_v2.py```)
-```python
-dict(
-    abbr='gpt-5',
-    type=LagentAgent,  # Or you can integrate other tool agent frames 
-    agent_type=ReAct,
-    max_turn=10,
-    llm=dict(
-        type=OpenAI, # Or other extendable apis in GTA/opencompass/opencompass/models/
-        path='gpt-5-2025-08-07',
-        key='YOUR_KEY',
-        openai_api_base='https://ai.nengyongai.cn/v1/chat/completions', # url 
-        query_per_second=1,
-        max_seq_len=131072,
-    ), 
-    # protocol=protocol,
-    tool_server='http://127.0.1.1:16181', # your real tool server ip and port
-    tool_meta='data/gta_dataset_v2/toolmeta.json',
-    batch_size=8,
-)
-```
-
-3. Infer and evaluate with OpenCompass.
-```shell
-# Set path to concatenate the toolmeta before the prompt
-export OPENCOMPASS_TOOLMETA_PATH=data/gta_dataset_v2/toolmeta.json
-# Use gpt-5 as default evaluation model
-export OPENAI_API_KEY=your_openai_key
-```
-```shell
-# infer only
-python run.py configs/eval_gta_bench_v2.py --max-num-workers 32 --debug --mode infer
-```
-```shell
-# evaluate only
-# python run.py configs/eval_gta_bench.py --max-num-workers 32 --debug --reuse [time_stamp_of_prediction_file] --mode eval
-python run.py configs/eval_gta_bench.py --max-num-workers 32 --debug --reuse 20260215_222222 --mode eval
-```
-```shell
-# infer and evaluate
-python run.py configs/eval_gta_bench_v2.py -p llmit -q auto --max-num-workers 32 --debug
-```
 
 # 📝 Citation
 If you use GTA in your research, please cite the following paper:
@@ -421,4 +340,3 @@ If you use GTA in your research, please cite the following paper:
       url={https://arxiv.org/abs/2407.08713}, 
 }
 ```
-
