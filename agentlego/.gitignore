@@ -128,3 +128,7 @@ webui/custom_tools/
 webui/installer_files/
 webui/generated/
 webui/*.yml
+
+# downloaded files
+~/
+yolov8n.pt

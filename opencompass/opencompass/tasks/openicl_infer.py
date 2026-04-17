@@ -6,6 +6,8 @@ import sys
 import time
 from typing import Any
 
+import json
+
 from mmengine.config import Config, ConfigDict
 from mmengine.utils import mkdir_or_exist
 
@@ -63,6 +65,39 @@ class OpenICLInferTask(BaseTask):
 
     def run(self, cur_model=None):
         self.logger.info(f'Task {task_abbr_from_cfg(self.cfg)}')
+
+        def _infer_output_complete(path: str) -> bool:
+            """Best-effort check that an inference output JSON looks usable.
+
+            OpenCompass will skip inference if the output file exists. If a
+            previous run crashed after creating an (incomplete) output file,
+            re-running would otherwise keep skipping and leave empty results.
+            """
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+            except Exception:
+                return False
+            if not isinstance(data, dict) or not data:
+                return False
+            checked = 0
+            for _, item in data.items():
+                if not isinstance(item, dict):
+                    return False
+                if 'prediction' not in item:
+                    return False
+                pred = item.get('prediction')
+                if pred is None or pred == '':
+                    return False
+                if isinstance(pred, list) and len(pred) == 0:
+                    return False
+                checked += 1
+                if checked >= 3:
+                    break
+            return checked > 0
+
+        force_rerun = os.getenv('OPENCOMPASS_FORCE_RERUN', '').lower() in (
+            '1', 'true', 'yes')
         for model_cfg, dataset_cfgs in zip(self.model_cfgs, self.dataset_cfgs):
             self.max_out_len = model_cfg.get('max_out_len', None)
             self.batch_size = model_cfg.get('batch_size', None)
@@ -85,8 +120,12 @@ class OpenICLInferTask(BaseTask):
                 out_path = get_infer_output_path(
                     self.model_cfg, self.dataset_cfg,
                     osp.join(self.work_dir, 'predictions'))
-                if osp.exists(out_path):
-                    continue
+                if osp.exists(out_path) and not force_rerun:
+                    if _infer_output_complete(out_path):
+                        continue
+                    self.logger.warning(
+                        'Found existing but incomplete inference output %s; re-running inference.',
+                        out_path)
                 self._inference()
 
     def _inference(self):

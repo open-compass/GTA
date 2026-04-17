@@ -73,8 +73,15 @@ class OpenICLEvalTask(BaseTask):
         self.num_gpus = max(
             c.get('eval_cfg', {}).get('num_gpus', 0)
             for c in sum(self.dataset_cfgs, []))
+        # Enable dumping detailed per-sample information by default.
+        # Previous behavior required config: eval.runner.task.dump_details=True.
+        # Many custom evaluators (e.g. GPTOSSEvaluator) return a `details` field
+        # that users expect to persist in the result JSON. To avoid silent
+        # dropping, we default to True here; users can still disable explicitly.
+        env_dump = os.getenv('OPENCOMPASS_DUMP_DETAILS')
+        default_dump_details = True if env_dump is None else env_dump.lower() in ('1','true','yes','y','on')
         self.dump_details = cfg.get('eval', {}).get('runner', {}).get(
-            'task', {}).get('dump_details', False)
+            'task', {}).get('dump_details', default_dump_details)
 
     def get_command(self, cfg_path, template):
         sys.path.append(os.getcwd())
@@ -91,6 +98,8 @@ class OpenICLEvalTask(BaseTask):
 
                 # Load Dataset
                 self.eval_cfg = self.dataset_cfg.get('eval_cfg')
+                if self.eval_cfg is None:
+                    self.eval_cfg = {}
                 self.output_column = dataset_cfg['reader_cfg']['output_column']
 
                 # overwrite postprocessor if the model has specified one
@@ -211,14 +220,51 @@ class OpenICLEvalTask(BaseTask):
                 0]  # strip extension
 
             preds['predictions'] = pred_strs
-            preds['references'] = (test_set[self.output_column]
-                                   if self.output_column else None)
+            # 兼容没有reference的情况
+            if self.output_column and self.output_column in test_set.column_names:
+                preds['references'] = test_set[self.output_column]
+            else:
+                preds['references'] = [None for _ in range(len(pred_strs))]
             preds['test_set'] = test_set
             if 'origin_prompt' not in preds:
                 preds['origin_prompt'] = [None for _ in range(len(pred_strs))]
+            # 兼容没有gold的情况
+            if 'gold' in signature(icl_evaluator.score).parameters:
+                if 'gold' in preds and preds['gold'] is not None:
+                    pass
+                else:
+                    preds['gold'] = [None for _ in range(len(pred_strs))]
+            # 自动生成checkpoints字段（如果需要且有full_tree）
+            if 'checkpoints' in signature(icl_evaluator.score).parameters:
+                # 兼容full_tree为list或dict
+                if 'full_tree' in preds:
+                    full_tree_data = preds['full_tree']
+                elif 'test_set' in preds and hasattr(preds['test_set'], '__getitem__') and len(preds['test_set']) > 0 and 'full_tree' in preds['test_set'][0]:
+                    full_tree_data = [sample['full_tree'] for sample in preds['test_set']]
+                else:
+                    full_tree_data = None
+                preds['checkpoints'] = full_tree_data
+            
+            if 'assistant_outputs' in signature(icl_evaluator.score).parameters:
+                if 'assistant_outputs' in preds and preds['assistant_outputs'] is not None:
+                    pass
+                else:
+                    preds['assistant_outputs'] = [None for _ in range(len(pred_strs))]
+            if 'attached_files' in signature(icl_evaluator.score).parameters:
+                if 'attached_files' in preds and preds['attached_files'] is not None:
+                    pass
+                else:
+                    preds['attached_files'] = [None for _ in range(len(pred_strs))]
+            
+            # 动态传递 tools_output_dir 参数（每个问题的tools_output_dir为tools_output/题号）
+            score_params = signature(icl_evaluator.score).parameters
+            if 'tools_output_dir' in score_params:
+                # 传递整个tools_output目录，评测器内部可按题号索引
+                preds['tools_output_dir'] = os.path.join(self.work_dir, 'tools_output')
+
             preds = {
                 k: preds[k]
-                for k in signature(icl_evaluator.score).parameters
+                for k in score_params if k in preds
             }
             result = icl_evaluator.score(**preds)
 

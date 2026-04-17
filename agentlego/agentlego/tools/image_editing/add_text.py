@@ -1,3 +1,5 @@
+
+from typing import Optional
 from PIL import ImageDraw, ImageFont
 
 from agentlego.types import Annotated, ImageIO, Info
@@ -18,6 +20,8 @@ class AddText(BaseTool):
                  'or a combination of ["l"(left), "m"(middle), "r"(right)] '
                  'and ["t"(top), "m"(middle), "b"(bottom)] like "mt" for middle-top')],
         color: str = 'red',
+        output_dir: Optional[str] = None,
+        filename: Optional[str] = None,
     ) -> ImageIO:
         image_pil = image.to_pil().copy()
         draw = ImageDraw.Draw(image_pil)
@@ -49,4 +53,13 @@ class AddText(BaseTool):
             except ValueError:
                 raise ValueError('Invalid position string.')
         draw.text(xy, text, anchor=anchor, fill=color, font=font)
-        return ImageIO(image_pil)
+        import os
+        if output_dir is not None:
+            os.makedirs(output_dir, exist_ok=True)
+            if filename is None:
+                filename = 'image_with_text.png'
+            output_path = os.path.join(output_dir, filename)
+            image_pil.save(output_path)
+            return ImageIO(output_path)
+        else:
+            return ImageIO(image_pil)

@@ -44,7 +44,13 @@ class SpeechToText(BaseTool):
             WhisperForConditionalGeneration.from_pretrained,
             self.model_name).to(self.device)
 
-    def apply(self, audio: AudioIO) -> str:
+    def apply(self, audio: str) -> str:
+        # Input is expected to be a file path string. For robustness, also
+        # accept AudioIO-like objects that expose `.to_path()`.
+        if hasattr(audio, 'to_path'):
+            audio = AudioIO(audio.to_path())
+        else:
+            audio = AudioIO(str(audio))
         target_sampling_rate = self.processor.feature_extractor.sampling_rate
         if target_sampling_rate != audio.sampling_rate:
             audio = resampling_audio(audio, target_sampling_rate)

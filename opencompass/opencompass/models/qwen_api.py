@@ -35,6 +35,7 @@ class Qwen(BaseAPIModel):
                  max_seq_len: int = 2048,
                  meta_template: Optional[Dict] = None,
                  retry: int = 5,
+                 max_input_chars: int = 6000,
                  generation_kwargs: Dict = {}):
         super().__init__(path=path,
                          max_seq_len=max_seq_len,
@@ -45,6 +46,57 @@ class Qwen(BaseAPIModel):
         import dashscope
         dashscope.api_key = key
         self.dashscope = dashscope
+        # DashScope native Generation API enforces a strict input length limit
+        # (commonly: 1..6000 characters). We defensively truncate chat history
+        # to avoid hard failures during long tool-augmented conversations.
+        self.max_input_chars = max_input_chars
+
+    @staticmethod
+    def _messages_char_len(messages: List[Dict]) -> int:
+        return sum(len((m.get('content') or '')) for m in messages)
+
+    @classmethod
+    def _truncate_messages(cls, messages: List[Dict], max_chars: int) -> List[Dict]:
+        """Keep the most recent messages under a character budget.
+
+        Preserves an initial system message (if any) and the newest turns.
+        If even the newest message is too long, truncates it from the left.
+        """
+        if max_chars < 1:
+            max_chars = 1
+        if cls._messages_char_len(messages) <= max_chars:
+            return messages
+
+        system = []
+        rest = messages
+        if messages and messages[0].get('role') == 'system':
+            system = [messages[0]]
+            rest = messages[1:]
+
+        kept_reversed: List[Dict] = []
+        total = cls._messages_char_len(system)
+        # Keep most recent messages first.
+        for msg in reversed(rest):
+            content = msg.get('content') or ''
+            msg_len = len(content)
+            if total + msg_len <= max_chars:
+                kept_reversed.append(msg)
+                total += msg_len
+                continue
+            # Always keep at least the newest message (truncate if needed).
+            if not kept_reversed:
+                available = max_chars - total
+                if available < 1:
+                    available = 1
+                kept_reversed.append({
+                    'role': msg.get('role', 'user'),
+                    'content': content[-available:],
+                })
+                total = max_chars
+            break
+
+        kept = list(reversed(kept_reversed))
+        return system + kept
 
     def generate(
         self,
@@ -123,10 +175,14 @@ class Qwen(BaseAPIModel):
                 'content': '\n'.join(msg_buffer),
                 'role': last_role
             })
+        # Leave a small buffer for any server-side overhead.
+        messages = self._truncate_messages(messages, max_chars=max(1, self.max_input_chars - 200))
         data = {'messages': messages}
         data.update(self.generation_kwargs)
 
         max_num_retries = 0
+        # If the server still complains about input length, progressively shrink.
+        shrink_budget = max(1, self.max_input_chars - 200)
         while max_num_retries < self.retry:
             self.acquire()
             try:
@@ -164,15 +220,29 @@ class Qwen(BaseAPIModel):
                 time.sleep(2)
                 continue
             if response.status_code == 400:
+                # DashScope may return 400 for multiple reasons; do not mask errors.
+                resp_msg = getattr(response, 'message', '') or ''
+                if 'Range of input length should be' in resp_msg:
+                    # Reduce prompt budget and retry.
+                    shrink_budget = max(1, shrink_budget - 500)
+                    data['messages'] = self._truncate_messages(
+                        data['messages'], max_chars=shrink_budget)
+                    self.logger.warning(
+                        'DashScope rejected input length; retry with %d chars (request %d/%d).',
+                        shrink_budget, max_num_retries + 1, self.retry)
+                    time.sleep(0.5)
+                    max_num_retries += 1
+                    continue
+                if 'Input data may contain inappropriate content.' in resp_msg:
+                    self.logger.warning('DashScope rejected input as inappropriate.')
+                    return ''
                 print('=' * 128)
                 print(response)
-                msg = 'Output data may contain inappropriate content.'
-                return msg
+                max_num_retries += 1
+                time.sleep(1)
+                continue
 
-            if ('Range of input length should be ' in response.message
-                    or  # input too long
-                    'Input data may contain inappropriate content.'
-                    in response.message):  # bad input
+            if 'Range of input length should be ' in getattr(response, 'message', ''):
                 print(response.message)
                 return ''
             print(response)

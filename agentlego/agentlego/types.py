@@ -249,14 +249,77 @@ def Info(description: Optional[str] = None,
     return Parameter(description=description, name=name, filetype=filetype)
 
 
+
+# VideoIO: 支持视频文件的多种格式转换和文件操作
+class VideoIO(IOType):
+    support_types = {'path': str, 'bytes': bytes}
+
+    def __init__(self, value: Union[str, bytes]):
+        super().__init__(value)
+        if self.type == 'path' and not Path(self.value).exists():
+            raise FileNotFoundError(f"No such file: '{self.value}'")
+
+    def to_path(self) -> str:
+        return self.to('path')
+
+    def to_bytes(self) -> bytes:
+        return self.to('bytes')
+
+
+    def to_file(self) -> IOBase:
+        if self.type == 'path':
+            return open(self.value, 'rb')
+        else:
+            return BytesIO(self.value)
+
+    @classmethod
+    def from_file(cls, file: IOBase) -> 'VideoIO':
+        try:
+            data = file.read()
+            return cls(data)
+        except Exception:
+            filename = temp_path('video', '.mp4')
+            with open(filename, 'wb') as f:
+                f.write(file.read())
+            return cls(filename)
+
+    @staticmethod
+    def _path_to_bytes(path: str) -> bytes:
+        return open(path, 'rb').read()
+
+    def _bytes_to_path(self, data: bytes) -> str:
+        category = 'video'
+        suffix = '.mp4'
+        path = temp_path(category, suffix)
+        with open(path, 'wb') as f:
+            f.write(data)
+        return path
+
+    @classmethod
+    def from_file(cls, file: IOBase) -> 'VideoIO':
+        return cls(file.read())
+
+    @staticmethod
+    def _path_to_bytes(path: str) -> bytes:
+        return open(path, 'rb').read()
+
+    def _bytes_to_path(self, data: bytes) -> str:
+        category = 'video'
+        suffix = '.mp4'  # 默认保存为mp4格式
+        path = temp_path(category, suffix)
+        with open(path, 'wb') as f:
+            f.write(data)
+        return path
+
 CatgoryToIO = {
     'image': ImageIO,
     'text': str,
     'audio': AudioIO,
+    'video': VideoIO,
     'bool': bool,
     'int': int,
     'float': float,
     'file': File,
 }
 
-__all__ = ['ImageIO', 'AudioIO', 'CatgoryToIO', 'Info', 'Annotated']
+__all__ = ['ImageIO', 'AudioIO', 'VideoIO', 'CatgoryToIO', 'Info', 'Annotated']
