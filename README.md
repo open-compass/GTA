@@ -1,6 +1,6 @@
 # GTA: General Tool Agent Benchmark and Evaluation Framework  
 ### [NeurIPS 2024 D&B] GTA: A Benchmark for General Tool Agents
-### [Arxiv 2026] GTA-2: Benchmarking General Tool Agents from Atomic Tool-Use to Open-Ended Workflows
+### [Arxiv 2026] GTA-2: Benchmarking General Tool Agents from Atomic Tool-Use to Open-Ended Workflows (to be released)
 <!-- <div align="center">
 
 [⬇️ [Dataset](https://github.com/open-compass/GTA/releases/latest/download/gta_dataset_v2.zip)]
