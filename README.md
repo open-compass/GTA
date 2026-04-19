@@ -80,7 +80,7 @@ Compared to GTA-Atomic, GTA-Workflow significantly expands modalities, tool ecos
 <!-- The detailed information of extended tools are shown in the table below.-->
 
 <div align="center">
- <img src="figs/statistics_table_gta2.jpg" width="500"/>
+ <img src="figs/statistics_table_gta2.jpg" width="400"/>
 </div> 
 
 ### Data Sources
