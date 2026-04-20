@@ -17,6 +17,10 @@ GTA-2 is a benchmark and evaluation kit for **General Tool Agents**, designed to
 - **GTA-Workflow**: the new focus of GTA-2, for long-horizon, open-ended workflow evaluation.
 - **GTA-Atomic**: the original GTA benchmark for short-horizon atomic tool-use tasks. Please refer to [README_GTA-1.md](README_GTA-1.md).
 
+<div align="center">
+ <img src="figs/sample.png" width="800"/>
+</div>
+
 This readme is centered around **GTA-Workflow**, which targets realistic long-horizon tasks with open-ended deliverables. Compared with traditional benchmark-style evaluation, GTA-Workflow focuses more on **what an agent can finally accomplish in a complete workflow**, rather than only whether it predicts the next tool call correctly.
 
 ### What this repo supports
@@ -38,9 +42,7 @@ This readme is centered around **GTA-Workflow**, which targets realistic long-ho
 
 
 
-<div align="center">
- <img src="figs/sample.png" width="800"/>
-</div>
+
 
 
 ## 📣 What's New
