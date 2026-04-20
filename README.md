@@ -5,7 +5,7 @@
 
 ⬇️ Download Dataset Here:
 [[GTA-Atomic](https://github.com/open-compass/GTA/releases/download/v0.1.0/gta_dataset.zip)]
-[[GTA-Workflow]()]
+[[GTA-Workflow](https://github.com/open-compass/GTA/releases/download/v0.2.0/gta_workflow_dataset.zip)]
 </div>
 
 ## 🌟 Introduction
@@ -267,14 +267,19 @@ python run.py configs/eval_gta_bench_v2.py -p llmit -q auto --max-num-workers 32
 # 📝 Citation
 If you use GTA in your research, please cite the following paper:
 ```bibtex
-@misc{wang2024gtabenchmarkgeneraltool,
-      title={GTA: A Benchmark for General Tool Agents}, 
-      author={Jize Wang and Zerun Ma and Yining Li and Songyang Zhang and Cailian Chen and Kai Chen and Xinyi Le},
-      year={2024},
-      eprint={2407.08713},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL},
-      url={https://arxiv.org/abs/2407.08713}, 
+@article{wang2024gta,
+  title={GTA: a benchmark for general tool agents},
+  author={Wang, Jize and Ma, Zerun and Li, Yining and Zhang, Songyang and Chen, Cailian and Chen, Kai and Le, Xinyi},
+  journal={Advances in Neural Information Processing Systems},
+  pages={75749--75790},
+  year={2024}
 }
+@article{wang2026gta2,
+  title={GTA-2: benchmarking general tool agents from atomic tool-use to open-ended workflows},
+  author={Wang, Jize and Liu, Xuanxuan and Li, Yining and Zhang, Songyang and Wang, Yijun and Shan, Zifei and Le, Xinyi and Chen, Cailian and Guan, Xinping and Tao, Dacheng},
+  journal={arXiv:2604.15715},
+  year={2026}
+}
+
 ```
 
