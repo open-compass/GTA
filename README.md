@@ -1,14 +1,12 @@
 # GTA: General Tool Agent Benchmark and Evaluation Framework  
-### [NeurIPS 2024 D&B] GTA: A Benchmark for General Tool Agents
-### [Arxiv 2026] GTA-2: Benchmarking General Tool Agents from Atomic Tool-Use to Open-Ended Workflows (to be released)
-<!-- <div align="center">
+### [[NeurIPS 2024 D&B] GTA: A Benchmark for General Tool Agents](https://proceedings.neurips.cc/paper_files/paper/2024/file/8a75ee6d4b2eb0b777f549a32a5a5c28-Paper-Datasets_and_Benchmarks_Track.pdf)
+### [[arXiv 2026] GTA-2: Benchmarking General Tool Agents from Atomic Tool-Use to Open-Ended Workflows](https://arxiv.org/pdf/2604.15715)
+<div align="center">
 
-[⬇️ [Dataset](https://github.com/open-compass/GTA/releases/latest/download/gta_dataset_v2.zip)]
-[📃 [Paper](https://arxiv.org/abs/2407.08713)]
-[🌐 [Project Page](https://open-compass.github.io/GTA/)]
-[🤗 [Hugging Face](https://huggingface.co/datasets/Jize1/GTA)]
-[🏆 [Newest Leaderboard](#-leaderboard-apr-2026)]
-</div> -->
+⬇️ Download Dataset Here:
+[[GTA-Atomic](https://github.com/open-compass/GTA/releases/download/v0.1.0/gta_dataset.zip)]
+[[GTA-Workflow]()]
+</div>
 
 ## 🌟 Introduction
 
@@ -46,11 +44,11 @@ This readme is centered around **GTA-Workflow**, which targets realistic long-ho
 
 
 ## 📣 What's New
+- **[2026.4.20]** Release GTA-2 paper and GTA-Workflow dataset. 🔥🔥🔥
 - **[2026.4.12]** Release **GTA-2**, extending the original GTA benchmark into a **hierarchical evaluation repo** with:
   - **GTA-Workflow** for long-horizon, open-ended workflow evaluation in productivity scenarios,
-  - support for evaluating both **LLM capability** and **agent execution harnesses**,
+  - support for evaluating both **LLM capability (GPT, Gemini, Claude, etc.)** and **agent execution harnesses (OpenClaw, Manus, Kortix, etc.)**,
   - support for both **OpenCompass-based agent evaluation** and **end-to-end result evaluation** for external/closed agent systems.
-  - The GTA-workflow dataset and GTA-2 paper are comming soon!
 - **[2026.2.14]** Update 🏆Leaderboard, Feb. 2026, including new models such as GPT-5, Gemini-2.5, Claude-4.5, Kimi-K2, Grok-4, Llama-4, Deepseek-V3.2, Qwen3-235B-A22B series.
 - **[2025.3.25]** Update 🏆Leaderboard, Mar. 2025, including new models such as Deepseek-R1, Deepseek-V3, Qwen-QwQ, Qwen-2.5-max series.
 - **[2024.9.26]** GTA is accepted to NeurIPS 2024 Dataset and Benchmark Track! 🎉🎉🎉
