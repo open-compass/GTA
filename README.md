@@ -6,7 +6,14 @@
 ⬇️ Download Dataset Here:
 [[GTA-Atomic](https://github.com/open-compass/GTA/releases/download/v0.1.0/gta_dataset.zip)]
 [[GTA-Workflow](https://github.com/open-compass/GTA/releases/download/v0.2.0/gta_workflow_dataset.zip)]
+
+🤗 Also Available on HuggingFace:
+[[GTA-Atomic](https://huggingface.co/datasets/Jize1/GTA)]
+[[GTA-Workflow](https://huggingface.co/datasets/Jize1/GTA-Workflow)]
+
 </div>
+
+
 
 ## 🌟 Introduction
 
