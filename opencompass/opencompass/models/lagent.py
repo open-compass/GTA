@@ -168,14 +168,15 @@ class LagentAgent:
                 tool = DummyTool(meta).to_lagent()
                 tools.setdefault(tool.name, tool)
 
-        self.tools = tools
+        from .tool_output import bind_tool_output
+        self.tools = {name: bind_tool_output(tool) for name, tool in tools.items()}
 
         if protocol is not None:
             protocol = REGISTRY.build(protocol)
             agent_cfg['protocol'] = protocol
 
         from lagent import BaseAgent, ActionExecutor
-        agent_cfg['action_executor'] = ActionExecutor(tools.values())
+        agent_cfg['action_executor'] = ActionExecutor(self.tools.values())
         self.agent: BaseAgent = REGISTRY.build(agent_cfg)
 
     def reset(self):

@@ -6,6 +6,7 @@ from typing import List
 from itertools import takewhile
 
 from opencompass.models.lagent import LagentAgent
+from opencompass.models.tool_output import scoped_tool_outputs
 from opencompass.registry import ICL_INFERENCERS
 
 from ..utils.logging import get_logger
@@ -106,6 +107,10 @@ class AgentInferencer(ChatInferencer):
     def __init__(self, model, **kwargs) -> None:
         super().__init__(model, **kwargs)
 
+    def configure_tools_output(self, path):
+        """Keep each task attempt's generated files alongside its predictions."""
+        self._tools_output_dir = path
+
     def get_chat_list(self,
                       ice_idx_list: List[List[int]],
                       retriever,
@@ -185,6 +190,7 @@ class AgentInferencer(ChatInferencer):
     def infer_last(self, chat: dict, index: int, output_handler):
         raise NotImplementedError
 
+    @scoped_tool_outputs
     def infer_every(self, chat: dict, index: int, output_handler):
         """
         对于每个 user 提交，调用 model.chat(...) 得到 steps（模型内部可含 tool 调用）。
@@ -489,6 +495,7 @@ class AgentInferencer(ChatInferencer):
 
 
 
+    @scoped_tool_outputs
     def infer_every_with_gt(self, chat: dict, index: int, output_handler):
         dialogs = chat['dialogs']
         assistant_indices = [

@@ -1221,8 +1221,8 @@ class NoiseReduction(BaseTool):
         audio_path = audio.to_path() if hasattr(audio, 'to_path') else str(audio)
         data, rate = sf.read(audio_path)
 
-        # Apply noise reduction
-        reduced_noise = nr.reduce_noise(y=data, sr=rate)
+        # SoundFile uses (frames, channels); noisereduce expects channels first.
+        reduced_noise = nr.reduce_noise(y=data.T, sr=rate).T
 
         # Save the denoised audio to a new file
         import os

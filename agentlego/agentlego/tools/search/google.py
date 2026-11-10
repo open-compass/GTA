@@ -1,4 +1,9 @@
+import hashlib
+import json
 import os
+from datetime import datetime, timezone
+from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import List, Tuple, Union
 
 import requests
@@ -50,7 +55,9 @@ class GoogleSearch(BaseTool):
                  search_type: str = 'search',
                  max_out_len: int = 1500,
                  with_url: bool = False,
-                 toolmeta=None) -> None:
+                 toolmeta=None,
+                 *,
+                 cache_dir=None) -> None:
         super().__init__(toolmeta=toolmeta)
 
         if api_key == 'ENV':
@@ -64,6 +71,8 @@ class GoogleSearch(BaseTool):
         self.max_out_len = max_out_len
         self.search_type = search_type
         self.with_url = with_url
+        cache_dir = cache_dir or os.environ.get('AGENTLEGO_WEB_CACHE_DIR')
+        self.cache_dir = Path(cache_dir).expanduser() if cache_dir else None
 
     def apply(self,
               query: str,
@@ -165,9 +174,40 @@ class GoogleSearch(BaseTool):
         params = {k: v for k, v in kwargs.items() if v is not None}
         params['q'] = query
 
+        cache_path = None
+        if self.cache_dir:
+            request_data = {'search_type': search_type, 'params': params}
+            cache_key = hashlib.sha256(json.dumps(
+                request_data, sort_keys=True, ensure_ascii=False).encode('utf-8')).hexdigest()
+            cache_path = self.cache_dir / (cache_key + '.json')
+            try:
+                cached = json.loads(cache_path.read_text(encoding='utf-8'))
+                if (isinstance(cached, dict) and cached.get('status_code') == 200
+                        and isinstance(cached.get('response'), dict)
+                        and cached.get('params') == params
+                        and cached.get('search_type') == search_type):
+                    return 200, cached['response']
+            except (FileNotFoundError, UnicodeError, json.JSONDecodeError):
+                pass
+
         response = requests.post(
             f'https://google.serper.dev/{search_type}',
             headers=headers,
             params=params,
             timeout=self.timeout)
-        return response.status_code, response.json()
+        result = response.json()
+        if cache_path and response.status_code == 200 and isinstance(result, dict):
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            record = dict(request_data, cache_key=cache_key, status_code=200, response=result,
+                          source='live_serper_response', archived_after_evaluation=False,
+                          fetched_at_utc=datetime.now(timezone.utc).isoformat())
+            tmp = NamedTemporaryFile(mode='w', encoding='utf-8', dir=cache_path.parent,
+                                     delete=False)
+            try:
+                with tmp:
+                    json.dump(record, tmp, ensure_ascii=False)
+                os.replace(tmp.name, cache_path)
+            finally:
+                if os.path.exists(tmp.name):
+                    os.unlink(tmp.name)
+        return response.status_code, result
