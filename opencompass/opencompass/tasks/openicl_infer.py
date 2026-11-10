@@ -162,6 +162,11 @@ class OpenICLInferTask(BaseTask):
             osp.join(self.work_dir, 'predictions'))
         out_dir, out_file = osp.split(out_path)
         mkdir_or_exist(out_dir)
+        if hasattr(inferencer, 'configure_tools_output'):
+            artifact_path = get_infer_output_path(
+                self.model_cfg, self.dataset_cfg,
+                osp.join(self.work_dir, 'tools_output'))
+            inferencer.configure_tools_output(osp.abspath(osp.splitext(artifact_path)[0]))
 
         if hasattr(self.infer_cfg, 'prompt_template') and \
                 hasattr(self.infer_cfg, 'ice_template'):
